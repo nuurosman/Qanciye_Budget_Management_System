@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QanciyeApp | home</title>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <!-- font Awsome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+  <!-- boostrap icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+  <!-- MDB -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.min.css" rel="stylesheet" />
+  <!-- Bootsrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- cutom css -->
+  <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+  <section class="d-flex align-items-center" style="background-color:#213F72 ;height: 50px;width: 100%;">
+    <div class="container-lg px-5">
+      <div class="row justify-content-center align-items-center px-5">
+        <div class="col-md-6 ">
+          <div class="social-icons " style="color: #C6345F;">
+            <i class="fa-brands fa-facebook fa-lg"></i>
+            <i class="fa-brands fa-instagram ms-2 fa-lg"></i>
+            <i class="fa-brands fa-twitter ms-2 fa-lg"></i>
+            <a href="#"><i class="fab fa-google-plus-g  ms-2 fa-lg" style="color: #C6345F;"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in  ms-2 fa-lg" style="color: #C6345F;"></i></a>
+
+          </div>
+        </div>
+        <div class="col-md-6  d-flex justify-content-md-end ">
+          <div class="contact-info text-light">
+            <i class="fa-solid fa-phone "></i><span> + (252) 612907406</span>
+          </div>
+          <div class="contact-info text-light ms-5">
+            <i class="fa-solid fa-envelope "></i></i><span> engnorlucky@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Navebar start -->
+  <nav class="navbar navbar-expand-lg navbar-light  bg-light shadow-lg " style="height: 100px;width: 100%;">
+    <div class="container-fluid  px-5 ">
+      <a class="navbar-brand ms-5 ps-4" href="#"> <img src="{{ url_for('static', filename='images/qanciye logo.png') }}"
+          class="img-fluid" alt="Description of image"></a>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./index">HOME</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">ABOUT US</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">PROJECTS</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">TEAM</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">BLOGS</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">CONTACT US</a>
+          </li>
+        </ul>
+      </div>
+      <div class="signin-signup-btn d-flex me-5 pe-5 ">
+        <div class="btn-one">
+          <button type="button" class="btn rounded-pill px-4" data-mdb-ripple-init data-mdb-ripple-color="dark">Sign
+            In</button>
+        </div>
+        <div class="btn-two">
+          <button type="button" class="btn  rounded-pill px-4 ms-2" data-mdb-ripple-init
+            data-mdb-ripple-color="dark">Sign Up</button>
+        </div>
+
+      </div>
+      <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+  <!-- Navbar end -->
+  <!-- hero section start -->
+  <!-- <section id="about-page" class="about-page">
+        <div class="container">
+          <div class="row about-home justify-content-between  align-items-center  ">
+            <div class="col-md-6  text-md-start ">
+              <div class="about_Us">
+                <h1>About Us</h1>
+              </div>
+            </div>
+            <div class="col-md-4  d-flex align-items-center text-center text-md-start  ">
+              <div class="right-home">
+                <a  class="back-to-home" href="index"><h2>Home</h2></a>
+              </div>
+              <div class="arrow">
+                <i class="fa-solid fa-angle-right" style="margin-left: 0.5em; font-size: 30px;color: #C6345F;"></i>
+              </div>
+              <div class="about-us">
+                <h2 style="margin-left: 0.5em;">About Us</h2>
+              </div>
+             
+              </div>
+              
+            </div>
+          </div>
+        </div>
+       </section>   -->
+  <!-- Test about us -->
+  <section class="test-about">
+    <!-- Background image -->
+    <div class="bg-image" style="
+        background-image: url('/static/images/illustration-construction-site.jpg');
+        height: 60vh;
+        background-size: cover;
+        background-position: center;
+    ">
+      <div class="mask d-flex align-items-center justify-content-center"
+        style="background-color: rgba(0, 0, 0, 0.6); height: 100%;">
+        <div class="container text-white">
+          <div class="row py-5 d-flex justify-content-between align-items-center h-100">
+            <div class="col-12 col-md-6 py-3 text-md-start text-md-start">
+              <h1 class="display-5 ">ABOUT US</h1>
+            </div>
+            <div class="col-12 col-md-6 text-md-start text-md-end">
+              <a href="{{url_for('index')}}" class="text-white text-decoration-none d-inline-block back-home">
+                <h2>Home</h2>
+              </a>
+              <i class="fa-solid fa-angle-right" style="margin-left: 0.5em; font-size: 30px; color: #C6345F;"></i>
+              <h2 class="d-inline-block" style="margin-left: 0.5em;">About us</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Background image -->
+  </section>
+
+  <!-- about section continue -->
+
+  <section class="aboutus-continue">
+    <div class="container-lg py-5 px-5 ">
+      <div class="row d-flex justify-content-center justify-content-md-start py-5 g-2">
+        <div class=" col-md-6 p-4 text-center text-md-start">
+
+          <a data-mdb-ripple-init href="#!"><img src="{{ url_for('static', filename='images/about-us.png')}}"
+              style="width: 30rem;" class="img-thumbnail " alt="About us image"></a>
+
+        </div>
+        <div class="col-md-6  text-center text-md-start">
+          <div class="about-hr d-flex justify-content-center justify-content-md-start text-center text-md-start">
+            <div class="line"></div>
+            <small> ABOUT US </small>
+            <div class="line"></div>
+          </div>
+          <h1 style="color: #213F72; font-size: 3em;">High Quality Building services.</h1>
+          <p>"At Qanciye Construction and General Service Co., we turn your vision into reality with over a decade of
+            experience, delivering innovation and quality in every project."</p>
+          <div class="roof-repair ">
+            <i class="fa-solid fa-angles-right  rounded-pill p-2 text-light " style="background-color: #C6345F;"></i>
+            <span class="ms-3" style="font-size: 25px; font-weight: bold;">Roof Repair</span>
+            <p class="col-md-ms-5 ms-5">It is a long established fact that a reader will distracted by the readablejk
+              content of a page when looking at its layout.</p>
+
+          </div>
+          <div class="Plumbing-Installation  justify-content-center justify-content-md-start"
+            style="margin-left: 4rem;">
+            <i class="fa-solid fa-angles-right  rounded-pill p-2 text-light " style="background-color: #C6345F;"></i>
+            <span class="ms-3" style="font-size: 25px; font-weight: bold;">Plumbing Installation</span>
+            <p class="ms-5">It is a long established fact that a reader will distracted by the readablejk content of a
+              page when looking at its layout.</p>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- get all updates -->
+  <section class="getAll-updates mb-5">
+    <div class="container-lg px-5 ">
+      <div class="row text-light d-flex justify-content-center align-items-center px-5 g-5">
+        <div class="col-md-8 ">
+          <div class="signup-for-news">
+            <h1>Sign Up For news & Get All Updates</h1>
+            <p>It is a long established fact that a reader will be distracted by the</p>
+          </div>
+
+        </div>
+        <div class="col-md-4 text-md-center">
+          <div class="contact-info d-flex align-items-center">
+            <span><i class="fa-solid fa-phone p-4 rounded-pill "
+                style="background-color: #C6345F; font-size: 25px;"></i></span>
+            <div class="contect">
+              <h2 class="ms-4">Contact with us</h2>
+              <h2 class="ms-4 " style="font-weight: bold;">(252) 615301196</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- WOrking progress Start -->
+  <section class="Working-progress ">
+    <div class="container-lg  py-5 px-4">
+      <div class="row d-flex justify-content-center p-2 g-5 ">
+        <div class="col-md-6 text-center p-4 text-md-start">
+          <div class="con d-flex align-items-center justify-content-center justify-content-md-start">
+            <h2>working process</h2>
+            <div class="line"></div>
+
+          </div>
+          <h1 style="color: #213F72; font-size: 3em;" class="mb-4">Innovation in construction at your service</h1>
+          <p class="mb-4">It is a long established fact that a reader will be distracted by the readablejk content of a
+            page when looking at its layout.</p>
+          <div class="read-more">
+            <button type="button" class="btn  btn-rounded px-5 py-3 ms-2" data-mdb-ripple-init
+              data-mdb-ripple-color="dark">READ MORE</button>
+          </div>
+        </div>
+        <div class="col-md-6  p-4  text-center text-md-start">
+          <div class="container_one">
+            <!-- Step 1 -->
+            <div class="step">
+              <div class="content ">
+                <img src="{{url_for('static', filename='images/site.svg')}}" alt="Flooring Installation Icon"
+                  class="icon">
+                <h2>Site <br> Preparation</h2>
+              </div>
+              <div class="step-number ms-5 px-4">01</div>
+            </div>
+
+            <!-- Dashed line -->
+            <div class="dashed-line"></div>
+
+            <!-- Step 2 -->
+            <div class="step ">
+              <div class="content">
+                <div class="step-number me-5 px-4">02</div>
+              </div>
+              <img src="{{url_for('static', filename='images/roofing.svg')}}" alt="Roofing Installation Icon"
+                class="icon">
+              <h2>Roofing <br> Installation</h2>
+
+            </div>
+
+            <!-- Dashed line -->
+            <div class="dashed-line"></div>
+
+            <!-- Step 3 -->
+            <div class="step">
+              <div class="content">
+                <img src="{{url_for('static', filename='images/Flooring.svg')}}" alt="Flooring Installation Icon"
+                  class="icon">
+                <h2>Flooring <br> Installation</h2>
+              </div>
+              <div class="step-number ms-5 px-4">03</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- continue section -->
+      <div class="row justify-content-center align-items-center py-5  mt-5 g-2">
+        <div class="col-md-6 col-lg-3 justify-content-center text-center  ">
+          <div class="detail-info d-flex justify-content-evenly p-4 border-end border-2 border-dark border-md-none">
+            <img src="{{url_for('static', filename='images/winning award.svg')}}" class="img-fluid"
+              style="width: 100px;" alt="Flooring Installation Icon">
+            <div class="text-center">
+              <h2 class="display-5 fw-bold">200+</h2>
+              <p>Winning award</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 justify-content-center text-center ">
+          <div class="detail-info p-4 d-flex justify-content-evenly border-end border-2 border-dark border-md-none ">
+            <img src="{{url_for('static', filename='images/Project Done.svg')}}" class="img-fluid" style="width: 100px;"
+              alt="Flooring Installation Icon">
+            <div class="text-center">
+              <h2 class="display-5 fw-bold">550+</h2>
+              <p>Project Done</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3  justify-content-center text-center">
+          <div class="detail-info  d-flex justify-content-evenly p-4  border-end border-2 border-dark border-md-none">
+            <img src="{{url_for('static', filename='images/Clients Review.svg')}}" class="img-fluid"
+              style="width: 100px;" alt="Flooring Installation Icon">
+            <div class="text-center">
+              <h2 class="display-5 fw-bold">100+</h2>
+              <p>Clients Review</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 justify-content-center text-center">
+          <div class="detail-info d-flex justify-content-evenly p-4">
+            <img src="{{url_for('static', filename='images/Team Member.svg')}}" class="img-fluid" style="width: 100px;"
+              alt="Flooring Installation Icon">
+            <div class="text-center">
+              <h2 class="display-5 fw-bold">350+</h2>
+              <p>Team Member</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- WOrking progress end -->
+  <!-- manager site comment -->
+  <section class="manager-site bg-light px-5 py-5" id="manager-site">
+    <div class="container-lg px-5  ">
+      <div class="quote-con d-flex justify-content-between py-5 mt-5 d-none d-md-flex">
+        <i class="fa-solid fa-quote-right custom-stroke "></i>
+        <i class="fa-solid fa-quote-right custom-stroke"></i>
+      </div>
+      <div class="row justify-content-center align-items-center  p-4" style="position: relative; top: -8rem;">
+        <div class="col-md-12   justify-content-center">
+          <div id="carouselExampleControls" class="carousel slide" data-mdb-ride="carousel" data-mdb-carousel-init>
+            <div class="carousel-inner text-center ">
+              <!-- Carousel Item 1 -->
+              <div class="carousel-item active">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                  <div class="manager-image">
+                    <img src="{{url_for('static', filename='images/5.JPG')}}"
+                      class="img-fluid rounded-pill img-thumbnail mb-4" alt="Manager-one" style="width: 150px;">
+                  </div>
+                  <h1 class="manager-name  fw-bold">Eng Mohamed</h1>
+                  <div class="stars mb-4">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star "></i>
+
+                  </div>
+                  <p style="width: 30em;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos similique
+                    reprehenderit exercitationem quibusdam possimus sunt autem fugiat iste, debitis libero
+                  </p>
+                </div>
+              </div>
+              <!-- Carousel Item 2 -->
+              <div class="carousel-item ">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                  <div class="manager-image">
+                    <img src="{{url_for('static', filename='images/9.jpg')}}"
+                      class="img-fluid rounded-pill img-thumbnail mb-4" alt="Manager-one" style="width: 150px;">
+                  </div>
+                  <h1 class="manager-name  fw-bold">Eng Guulane</h1>
+                  <div class="stars mb-4">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star "></i>
+                  </div>
+                  <p style="width: 30em;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos similique
+                    reprehenderit exercitationem quibusdam possimus sunt autem fugiat iste, debitis libero
+                  </p>
+                </div>
+              </div>
+              <!-- Carousel Item 3 -->
+              <div class="carousel-item ">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                  <div class="manager-image">
+                    <img src="{{url_for('static', filename='images/2.JPG')}}"
+                      class="img-fluid rounded-pill img-thumbnail mb-4" alt="Manager-one" style="width: 150px;">
+                  </div>
+                  <h1 class="manager-name mb-4 fw-bold">Eng Nur Osman Nur</h1>
+                  <div class="stars mb-4">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                  </div>
+                  <p style="width: 30em;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos similique
+                    reprehenderit exercitationem quibusdam possimus sunt autem fugiat iste, debitis libero
+                  </p>
+                </div>
+              </div>
+              <!-- Carousel Item 4 -->
+              <div class="carousel-item ">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                  <div class="manager-image">
+                    <img src="{{url_for('static', filename='images/11.JPG')}}"
+                      class="img-fluid rounded-pill img-thumbnail mb-4" alt="Manager-one" style="width: 150px;">
+                  </div>
+                  <h1 class="manager-name  fw-bold">Eng Omar Ali</h1>
+                  <div class="stars mb-4">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star "></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                  </div>
+                  <p style="width: 30em;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos similique
+                    reprehenderit exercitationem quibusdam possimus sunt autem fugiat iste, debitis libero
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- Carousel Controls -->
+            <!-- <button class="carousel-control-prev" type="button" data-mdb-target="#carouselExampleControls" data-mdb-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span> 
+              <div class="next-pre-icon   rounded-pill d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-angle-left"></i>
+              </div>
+            </button> -->
+            <!-- <button class="carousel-control-next " type="button" data-mdb-target="#carouselExampleControls" data-mdb-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span> 
+         
+               
+                <div class="next-pre-icon   rounded-pill d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-angle-right "></i>
+                  </div>
+            </button> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Footer -->
+  <footer class="text-white d-flex align-items-center pt-5" style="background-color: #213F72; height: 80vh;">
+    <div class="container-lg  ">
+      <div class="row  justify-content-center g-5">
+        <!-- Logo and Description -->
+        <div class="col-md-3 mb-4">
+          <div class="mb-3">
+            <a class="navbar-brand" href="#"> <img
+                src="{{ url_for('static', filename='images/qanciye logo1.png') }}" class="img-fluid"
+                alt="Description of image"></a>
+
+          </div>
+          <p>Lorem Ipsum is simply is dummy omy is text Loremo Ipsum is simply is out no our o dummy text.</p>
+          <div class="d-flex">
+            <!-- Social Icons -->
+            <a href="#" class="text-white me-2"><i class="fab fa-facebook-f fa-lg"></i></a>
+            <a href="#" class="text-white me-2"><i class="fab fa-twitter fa-lg"></i></a>
+            <a href="#" class="text-white me-2"><i class="fab fa-instagram fa-lg"></i></a>
+            <a href="#" class="text-white"><i class="fab fa-pinterest fa-lg"></i></a>
+          </div>
+        </div>
+
+        <!-- Get Free Link (Services) -->
+        <div class="col-md-3 mb-4">
+          <h5 class="text-uppercase">Get Free Link</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white">Software Development</a></li>
+            <li><a href="#" class="text-white">Data Analytics</a></li>
+            <li><a href="#" class="text-white">IT Consulting</a></li>
+            <li><a href="#" class="text-white">UI/UX Design</a></li>
+            <li><a href="#" class="text-white">Network Solutions</a></li>
+            <li><a href="#" class="text-white">Others</a></li>
+          </ul>
+        </div>
+
+        <!-- Address -->
+        <div class="col-md-3 mb-4">
+          <h5 class="text-uppercase">Address</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="fas fa-map-marker-alt text-orange me-2"></i>2972 Westheimer Rd. Santa Ana,
+              Illinois 85486</li>
+            <li class="mb-2"><i class="fas fa-envelope text-orange me-2"></i>debbie.baker@example.com</li>
+            <li class="mb-2"><i class="fas fa-envelope text-orange me-2"></i>nevaeh.simm@example.com</li>
+            <li class="mb-2"><i class="fas fa-phone text-orange me-2"></i>(405) 555-0128</li>
+            <li class="mb-2"><i class="fas fa-phone text-orange me-2"></i>(629) 555-0129</li>
+          </ul>
+        </div>
+
+        <!-- Newsletter -->
+        <div class="col-md-3 mb-4">
+          <h5 class="text-uppercase">Newsletter</h5>
+          <p>Lorem Ipsum is simply is dummy omy is text Loremo Ipsum</p>
+          <form action="#">
+            <div class="input-group">
+              <input type="email" class="form-control" placeholder="Your E-mail Address">
+              <button type="submit" class="btn btn-orange"><i class="fas fa-paper-plane"></i></button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Copyright -->
+      <div class=" border-bottom border-1 opacity-50 border-light">
+
+      </div>
+      <div class="row mt-4  ">
+        <div class="col text-center d-flex justify-content-between">
+          <p class="mb-0">&copy; SteelCity 2023 | All Rights Reserved</p>
+          <div class="policy">
+            <a href="#" class="text-white me-3">Terms & Conditions</a>
+            <a href="#" class="text-white me-3">Privacy Policy</a>
+            <a href="#" class="text-white">Contact Us</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MDB JAVASCRIPT-->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.umd.min.js"></script>
+  <!-- Bootsrap  -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

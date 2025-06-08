@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QanciyeApp | home</title>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <!-- font Awsome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+  <!-- boostrap icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+  <!-- MDB -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.min.css" rel="stylesheet" />
+  <!-- Bootsrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- custom css -->
+  <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+  <section class="d-flex align-items-center" style="background-color:#213F72 ;height: 50px;">
+    <div class="container">
+      <div class="row justify-content-center align-items-center px-5">
+        <div class="col-md-6 ">
+          <div class="social-icons " style="color: #C6345F;">
+            <i class="fa-brands fa-facebook fa-lg"></i>
+            <i class="fa-brands fa-instagram ms-2 fa-lg"></i>
+            <i class="fa-brands fa-twitter ms-2 fa-lg"></i>
+            <a href="#"><i class="fab fa-google-plus-g  ms-2 fa-lg" style="color: #C6345F;"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in  ms-2 fa-lg" style="color: #C6345F;"></i></a>
+
+          </div>
+        </div>
+        <div class="col-md-6  d-flex justify-content-md-end ">
+          <div class="contact-info text-light">
+            <i class="fa-solid fa-phone "></i><span> + (252) 612907406</span>
+          </div>
+          <div class="contact-info text-light ms-5">
+            <i class="fa-solid fa-envelope "></i></i><span> engnorlucky@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Navebar start -->
+  <nav class="navbar navbar-expand-lg navbar-light  bg-light shadow-lg " style="height: 100px">
+    <div class="container-fluid ms-5 px-5 ">
+      <a class="navbar-brand ms-5 ps-4" href="#"> <img src="{{ url_for('static', filename='images/qanciye logo.png') }}"
+          class="img-fluid" alt="Description of image"></a>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">HOME</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="url_for(./about)">ABOUT US</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">PROJECTS</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">TEAM</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">BLOGS</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">CONTACT US</a>
+          </li>
+        </ul>
+      </div>
+      <div class="signin-signup-btn d-flex me-5 pe-5 ">
+        <div class="btn-one">
+          <a href="{{url_for('signin_page')}}"><button type="button" class="btn rounded-pill px-4" data-mdb-ripple-init
+              data-mdb-ripple-color="dark">Sign In</button>
+          </a>
+        </div>
+        <div class="btn-two">
+          <a href="{{url_for('signup_page')}}"><button type="button" class="btn  rounded-pill px-4 ms-2"
+              data-mdb-ripple-init data-mdb-ripple-color="dark">Sign Up</button></a>
+        </div>
+
+      </div>
+      <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+  <!-- Navbar end -->
+  <!-- hero section start -->
+  <section id="hero-page" class="hero-page">
+    <div class="container-lg">
+      <div class="row justify-content-center align-items-center py-5  g-5">
+        <div class="col-md-6 text-center text-md-start">
+          <small class="small-dream">WE BUILD YOUR DREAM HOUSE!</small>
+          <h1 class="quality" style="color: #213F72;font-size: 3.5rem;margin-bottom: 1rem;">High Quality Building
+            services.</h1>
+          <p style="text-align: justify;margin-bottom: 1rem;">
+            At Qanciye Construction and General Service Co., we are dedicated to transforming your vision into reality.
+            With over a decade of experience in construction and general services, we bring innovation, quality, and
+            excellence to every project, ensuring that we build a future you can trust.
+          </p>
+          <div class="read-more">
+            <button type="button" class="btn  btn-rounded px-5 py-3 ms-2" data-mdb-ripple-init
+              data-mdb-ripple-color="dark">READ MORE</button>
+          </div>
+        </div>
+        <div class="col-md-6 text-center text-md-start">
+
+          <img src="{{ url_for('static', filename='images/tools-table.jpg')}}" class="img-fluid hero-image"
+            alt=" hero-image">
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- hero section end -->
+  <!-- about continue -->
+  <section class="aboutus-continue bg-light home-one">
+    <div class="container-lg py-5 px-5 ">
+      <div class="row d-flex justify-content-center justify-content-md-start py-5 g-2">
+        <div class=" col-md-6 p-4 text-center text-md-start">
+
+          <a data-mdb-ripple-init href="#!"><img src="{{ url_for('static', filename='images/about-us.png')}}"
+              style="width: 30rem;" class="img-thumbnail " alt="About us image"></a>
+
+        </div>
+        <div class="col-md-6  text-center text-md-start">
+          <div class="about-hr d-flex justify-content-center justify-content-md-start text-center text-md-start">
+            <div class="line"></div>
+            <small> ABOUT US </small>
+            <div class="line"></div>
+          </div>
+          <h1 style="color: #213F72; font-size: 3em;">High Quality Building services.</h1>
+          <p>"At Qanciye Construction and General Service Co., we turn your vision into reality with over a decade of
+            experience, delivering innovation and quality in every project."</p>
+          <div class="roof-repair ">
+            <i class="fa-solid fa-angles-right  rounded-pill p-2 text-light " style="background-color: #C6345F;"></i>
+            <span class="ms-3" style="font-size: 25px; font-weight: bold;">Roof Repair</span>
+            <p class="col-md-ms-5 ms-5">It is a long established fact that a reader will distracted by the readablejk
+              content of a page when looking at its layout.</p>
+
+          </div>
+          <div class="Plumbing-Installation  justify-content-center justify-content-md-start"
+            style="margin-left: 4rem;">
+            <i class="fa-solid fa-angles-right  rounded-pill p-2 text-light " style="background-color: #C6345F;"></i>
+            <span class="ms-3" style="font-size: 25px; font-weight: bold;">Plumbing Installation</span>
+            <p class="ms-5">It is a long established fact that a reader will distracted by the readablejk content of a
+              page when looking at its layout.</p>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="row my-5">
+        <div class="col-md-6">
+          <div class="con d-flex align-items-center justify-content-center justify-content-md-start">
+            <small class="fw-bold mb-4">OUR SERVICES</small>
+            <div class="line mb-4 ms-3"></div>
+
+          </div>
+          <h1>Constructing excellence delivering results</h1>
+        </div>
+        <div class="col-md-6 py-5">
+
+          <p>It is a long established fact that a reader will be distracted by the It is a long established fact that a
+            reader will be distracted by the It is a long established fact that a reader will be</p>
+        </div>
+      </div>
+      <div class="row d-flex  justify-content-center align-items-center">
+        <div class="col-sm-6 col-md-12 ">
+          <div class="row p-2 d-flex justify-content-center align-items-center border-top mt-3 g-5">
+            <div class="col-md-3  d-flex justify-content-center justify-content-sm-start  justify-content-md-center" style="margin-top: 10px;">
+              <!-- Background image -->
+              <div class="bg-image-service ">
+                <img src="{{ url_for('static', filename='images/5.jpg')}}"
+              style="width: 30rem; " class="img-thumbnail " alt="About us image"></a>
+              </div>
+              </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start   justify-content-md-start">
+                <h2>Electrical Wiring</h2>
+               </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start  justify-content-md-center">
+                <p>It is a long established fact that a reader will be distracted by the </p>
+               </div>
+             
+               <div class="col-md-3  read-btn d-flex justify-content-center justify-content-sm-start  justify-content-md-end">
+                <button type="button" class="btn  btn-rounded px-5 py-3 ms-2" data-mdb-ripple-init
+                  data-mdb-ripple-color="dark">READ MORE</button>
+              </div>
+          
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-12 ">
+          <div class="row p-2 d-flex justify-content-center align-items-center border-top mt-3  g-5">
+            <div class="col-md-3  d-flex justify-content-center justify-content-sm-start  justify-content-md-center" style="margin-top: 10px;">
+              <!-- Background image -->
+              <div class="bg-image-service ">
+                <img src="{{ url_for('static', filename='images/11.jpg')}}"
+              style="width: 30rem; " class="img-thumbnail " alt="About us image"></a>
+              </div>
+              </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start   justify-content-md-start">
+                <h2>Flooring Installation</h2>
+               </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start  justify-content-md-center">
+                <p>It is a long established fact that a reader will be distracted by the </p>
+               </div>
+             
+               <div class="col-md-3  read-btn d-flex justify-content-center justify-content-sm-start  justify-content-md-end">
+                <button type="button" class="btn  btn-rounded px-5 py-3 ms-2" data-mdb-ripple-init
+                  data-mdb-ripple-color="dark">READ MORE</button>
+              </div>
+          
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-12 justify-content-star ">
+          <div class="row p-2 d-flex justify-content-center align-items-center border-top border-bottom mt-3 pb-3 g-5">
+            <div class="col-md-3  d-flex justify-content-center justify-content-sm-start  justify-content-md-center" style="margin-top: 10px;">
+              <!-- Background image -->
+              <div class="bg-image-service ">
+                <img src="{{ url_for('static', filename='images/9.jpg')}}"
+              style="width: 30rem; " class="img-thumbnail " alt="About us image"></a>
+              </div>
+              </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start   justify-content-md-start">
+                <h2>Fence Repair</h2>
+               </div>
+               <div class="col-md-3 d-flex justify-content-center justify-content-sm-start  justify-content-md-center">
+                <p>It is a long established fact that a reader will be distracted by the </p>
+               </div>
+             
+               <div class="col-md-3  read-btn d-flex justify-content-center justify-content-sm-start  justify-content-md-end">
+                <button type="button" class="btn  btn-rounded px-5 py-3 ms-2" data-mdb-ripple-init
+                  data-mdb-ripple-color="dark">READ MORE</button>
+              </div>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="recent-work" id="recent-work">
+    <div class="container-lg py-5">
+      <div class="row d-flex justify-content-center ">
+        <div class="col-md-6 text-center text-md-start align-items: flex-end">
+          <div class="about-hr d-flex justify-content-center justify-content-md-start text-center text-md-start">
+            <div class="line "></div>
+            <small> RECENT WORK </small>
+            <div class="line"></div>
+          </div> 
+          <h1 style="color:white; font-size: 3em;">Building strong foundations for success</h1>
+        </div>
+        <div class="col-md-6  d-flex justify-content-center justify-content-md-end align-items-flex-end">
+          <!-- carousel buttons left and -->
+          <div class="nav-buttons">
+            <!-- Previous Button -->
+            <div class="circle" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <i class="fa-solid fa-arrow-left text-light fw-bold"></i>
+            </div>
+        
+            <!-- Next Button -->
+            <div class="circle" data-bs-target="#carouselExample" data-bs-slide="next">
+                <i class="fa-solid fa-arrow-right text-light fw-bold"></i>
+            </div>
+        </div>
+     
+        </div>
+      </div>
+      <div class="row my-4 py-5">
+        <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+              <div class="carousel-item active">
+                  <div class="row">
+                      <div class="col-md-4 ">
+                          <div class="card">
+                              <img src="{{ url_for('static', filename='images/project 1.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body" >
+                                  <h5 class="card-title">Column 1</h5>
+                                  <p class="card-text">Description for column 1.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-4 d-none d-md-block">
+                          <div class="card">
+                            <img src="{{ url_for('static', filename='images/project 2.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body">
+                                  <h5 class="card-title">Column 2</h5>
+                                  <p class="card-text">Description for column 2.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-4 d-none d-md-block">
+                          <div class="card">
+                            <img src="{{ url_for('static', filename='images/project 1.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body" >
+                                  <h5 class="card-title">Column 3</h5>
+                                  <p class="card-text">Description for column 3.</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div class="carousel-item">
+                  <div class="row">
+                      <div class="col-md-4">
+                          <div class="card">
+                            <img src="{{ url_for('static', filename='images/project 2.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body">
+                                  <h5 class="card-title">Column 4</h5>
+                                  <p class="card-text">Description for column 4.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-4 d-none d-md-block">
+                          <div class="card">
+                            <img src="{{ url_for('static', filename='images/project 1.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body">
+                                  <h5 class="card-title">Column 5</h5>
+                                  <p class="card-text">Description for column 5.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-4 d-none d-md-block">
+                          <div class="card">
+                            <img src="{{ url_for('static', filename='images/project 2.jpg')}}" class="card-img-top" alt="Wild Landscape"/>
+                              <div class="card-body">
+                                  <h5 class="card-title">Column 6</h5>
+                                  <p class="card-text">Description for column 6.</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MDB JAVASCRIPT-->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.umd.min.js"></script>
+  <!-- Bootsrap  -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

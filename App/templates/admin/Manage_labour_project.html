@@ -1,0 +1,292 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+
+<!-- signin form start -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+
+        <div class="col-md-12">
+            <!-- Table Data start-->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this assignment?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+            <div class="container-fluid">
+                  <!-- Add Assignment Button -->
+            <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal" data-bs-target="#assignmentModal">
+                Add Assignment
+            </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Assignment ID</th>
+                        <th>Labour Name</th>
+                        <th>Project Name</th>
+                        <th>Assigned Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment[0] }}</td>
+                        <td>{{ assignment[1] }}</td>
+                        <td>{{ assignment[2] }}</td>
+                        <td>{{ assignment[3] }}</td>
+                        <td style="display: flex; gap: 3px;">
+                            <!-- Edit Button -->
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateAssignmentModal"
+                                data-id="{{ assignment[0] }}" data-labour-id="{{ assignment[4] }}" 
+                                data-project-id="{{ assignment[5] }}" style="display:inline;">
+                                <i class="bi bi-pencil-square text-white"></i>
+                            </button>
+
+                            <!-- Delete Button -->
+                            <button type="button" class="btn btn-sm btn-danger delete-button" data-assignment-id="{{ assignment[0] }}">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+            <!-- Assignment Registration Modal -->
+            <div class="modal fade" id="assignmentModal" tabindex="-1" aria-labelledby="assignmentModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="assignmentModalLabel">Assign Labour to Project</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="assignmentForm" method="POST" action="/register_assignment">
+                                <div class="mb-3">
+                                    <label for="labour_id" class="form-label">Labour</label>
+                                    <select class="form-select" id="labour_id" name="labour_id" required>
+                                        <option value="" disabled selected>Loading...</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Loading...</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Assign</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Update Modal -->
+            <div class="modal fade" id="updateAssignmentModal" tabindex="-1" aria-labelledby="updateAssignmentModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateAssignmentModalLabel">Update Assignment</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateAssignmentForm" method="POST" action="/update_assignment">
+                                <input type="hidden" id="assignment_id" name="assignment_id">
+                                <div class="mb-3">
+                                    <label for="update_labour_id" class="form-label">Labour</label>
+                                    <select class="form-select" id="update_labour_id" name="labour_id" required>
+                                        <option value="" disabled selected>Loading...</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="update_project_id" name="project_id" required>
+                                        <option value="" disabled selected>Loading...</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Assignment</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const assignmentForm = document.getElementById("assignmentForm");
+                    const updateAssignmentForm = document.getElementById("updateAssignmentForm");
+
+                    assignmentForm.addEventListener("submit", async (event) => {
+                        event.preventDefault(); // Prevent default form submission
+
+                        // Gather form data
+                        const formData = new FormData(assignmentForm);
+                        const data = Object.fromEntries(formData);
+
+                        try {
+                            const response = await fetch("/register_assignment", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(data),
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(result.message);
+                                assignmentForm.reset(); // Reset the form
+                                location.reload(); // Reload the page to reflect changes
+                            } else {
+                                alert("Error: " + result.message);
+                            }
+                        } catch (error) {
+                            console.error("Registration Error:", error);
+                            alert("An error occurred during registration.");
+                        }
+                    });
+
+                    updateAssignmentForm.addEventListener("submit", async (event) => {
+                        event.preventDefault(); // Prevent default form submission
+
+                        // Gather form data
+                        const formData = new FormData(updateAssignmentForm);
+                        const data = Object.fromEntries(formData);
+
+                        try {
+                            const response = await fetch("/update_assignment", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(data),
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(result.message);
+                                updateAssignmentForm.reset(); // Reset the form
+                                location.reload(); // Reload the page to reflect changes
+                            } else {
+                                alert("Error: " + result.message);
+                            }
+                        } catch (error) {
+                            console.error("Update Error:", error);
+                            alert("An error occurred during update.");
+                        }
+                    });
+
+                    document.querySelectorAll(".delete-button").forEach(button => {
+                        button.addEventListener("click", function () {
+                            const assignmentId = this.getAttribute("data-assignment-id");
+                            const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+                            document.getElementById("confirmDelete").addEventListener("click", function () {
+                                fetch(`/delete_assignment/${assignmentId}`, {
+                                    method: "POST"
+                                }).then(response => {
+                                    if (response.ok) {
+                                        location.reload();
+                                    } else {
+                                        alert("Error deleting assignment.");
+                                    }
+                                }).catch(error => {
+                                    console.error("Delete Error:", error);
+                                    alert("An error occurred during deletion.");
+                                });
+                            });
+                            deleteModal.show();
+                        });
+                    });
+
+                    const updateModal = document.getElementById('updateAssignmentModal');
+                    updateModal.addEventListener('show.bs.modal', (event) => {
+                        const button = event.relatedTarget; // Button that triggered the modal
+
+                        if (button) {
+                            // Extract assignment data from button attributes
+                            const assignmentId = button.getAttribute('data-id');
+                            const labourId = button.getAttribute('data-labour-id');
+                            const projectId = button.getAttribute('data-project-id');
+
+                            // Populate modal fields
+                            document.getElementById('assignment_id').value = assignmentId;
+                            document.getElementById('update_labour_id').value = labourId;
+                            document.getElementById('update_project_id').value = projectId;
+                        }
+                    });
+
+                    fetchDropdownData();
+
+                    function fetchDropdownData() {
+                        fetch('/get_dropdown_data')  // Endpoint to fetch dropdown data
+                            .then(response => response.json())
+                            .then(data => {
+                                populateDropdown("labour_id", data.labours);
+                                populateDropdown("project_id", data.projects);
+                                populateDropdown("update_labour_id", data.labours);
+                                populateDropdown("update_project_id", data.projects);
+                            })
+                            .catch(error => console.error('Error fetching dropdown data:', error));
+                    }
+
+                    function populateDropdown(dropdownId, items) {
+                        const dropdown = document.getElementById(dropdownId);
+                        dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
+
+                        if (items.length > 0) {
+                            items.forEach(item => {
+                                let option = document.createElement("option");
+                                option.value = item.id;
+                                option.textContent = item.name;
+                                dropdown.appendChild(option);
+                            });
+                        } else {
+                            let noDataOption = document.createElement("option");
+                            noDataOption.value = "";
+                            noDataOption.disabled = true;
+                            noDataOption.textContent = "No options available";
+                            dropdown.appendChild(noDataOption);
+                        }
+                    }
+                });
+            
+            </script>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

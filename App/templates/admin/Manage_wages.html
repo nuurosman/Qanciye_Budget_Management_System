@@ -1,0 +1,460 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+
+<!-- Wages Management -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this wage record?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                <!-- Add Wage Button -->
+                <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal"
+                    data-bs-target="#wageModal">
+                    Add Wage Record
+                </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Wage ID</th>
+                                        <th>Labour Name</th>
+                                        <th>Project Name</th>
+                                        <th>Daily Rate</th>
+                                        <th>Total Days</th>
+                                        <th>Total Wage</th>
+                                        <th>Registered By</th>
+                                        <th>Status</th> <!-- Added -->
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in wage_records %}
+                                    <tr>
+                                        <td>{{ record.wage_id }}</td>
+                                        <td>{{ record.labour_name }}</td>
+                                        <td>{{ record.project_name }}</td>
+                                        <td>{{ "%.2f"|format(record.daily_rate) }}</td>
+                                        <td>{{ record.total_days }}</td>
+                                        <td>{{ "%.2f"|format(record.total_wage) }}</td>
+                                        <td>
+                                            {% if record.admin_name %}
+                                                {{ record.admin_name }} (Admin)
+                                            {% elif record.site_engineer_name %}
+                                                {{ record.site_engineer_name }} (Engineer)
+                                            {% else %}
+                                                Not Specified
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if record.is_paid %}
+                                                <span class="badge bg-success">Paid</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Unpaid</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ record.created_at.strftime('%Y-%m-%d') if record.created_at else '' }}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-warning edit-wage" 
+        data-bs-toggle="modal"
+        data-bs-target="#updateWageModal"
+        data-wage-id="{{ record.wage_id }}"
+        data-labour-id="{{ record.labour_id }}"
+        data-project-id="{{ record.project_id }}">
+    <i class="bi bi-pencil-square text-white"></i>
+</button>
+                                        
+                                                <button class="btn btn-sm btn-danger delete-wage"
+                                                        data-wage-id="{{ record.wage_id }}">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wage Registration Modal -->
+            <div class="modal fade" id="wageModal" tabindex="-1" aria-labelledby="wageModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="wageModalLabel">Register Wage</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="wageForm" method="post" action="/admin/register_wages">
+                                <div class="mb-3">
+                                    <label for="labour_id" class="form-label">Labour</label>
+                                    <select class="form-select" id="labour_id" name="labour_id" required>
+                                        <option value="" disabled {% if not assigned_labour %}selected{% endif %}>Select labour</option>
+                                        {% for labour in assigned_labour %}
+                                        <option value="{{ labour[0] if labour.labour_id is not defined else labour.labour_id }}">
+                                            {{ labour[1] if labour.full_name is not defined else labour.full_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled {% if not projects %}selected{% endif %}>Select project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project[0] if project.project_id is not defined else project.project_id }}">
+                                            {{ project[1] if project.name is not defined else project.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="daily_rate" class="form-label">Daily Rate </label>
+                                    <input type="number" class="form-control" id="daily_rate" name="daily_rate" step="0.01" min="0" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="total_days" class="form-label">Total Days Worked</label>
+                                    <input type="number" class="form-control" id="total_days" name="total_days" min="0" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="total_wage" class="form-label">Total Wage </label>
+                                    <input type="number" class="form-control" id="total_wage" name="total_wage" step="0.01" min="0" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Admin</label>
+                                    <input type="text" class="form-control" value="{{ admin_name }}" readonly>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register Wage</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wage Update Modal -->
+            <div class="modal fade" id="updateWageModal" tabindex="-1" aria-labelledby="updateWageModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateWageModalLabel">Edit Wage Record</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateWageForm" method="POST" action="/admin/update_wage">
+                                <input type="hidden" id="wage_id" name="wage_id">
+                                <div class="mb-3">
+                                    <label for="update_labour_id" class="form-label">Labour</label>
+                                    <select class="form-select" id="update_labour_id" name="labour_id" required>
+                                        <option value="" disabled>Select labour</option>
+                                        {% for labour in assigned_labour %}
+                                        <option value="{{ labour[0] if labour.labour_id is not defined else labour.labour_id }}">
+                                            {{ labour[1] if labour.full_name is not defined else labour.full_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="update_project_id" name="project_id" required>
+                                        <option value="" disabled>Select project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project[0] if project.project_id is not defined else project.project_id }}">
+                                            {{ project[1] if project.name is not defined else project.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_daily_rate" class="form-label">Daily Rate</label>
+                                    <input type="number" class="form-control" id="update_daily_rate" name="daily_rate" step="0.01" min="0" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_total_days" class="form-label">Total Days Worked</label>
+                                    <input type="number" class="form-control" id="update_total_days" name="total_days" min="0" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_total_wage" class="form-label">Total Wage</label>
+                                    <input type="number" class="form-control" id="update_total_wage" name="total_wage" step="0.01" min="0" required readonly>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Wage</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const wageForm = document.getElementById("wageForm");
+    const updateWageForm = document.getElementById("updateWageForm");
+    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    let currentDeleteId = null;
+
+    // Calculate total wage when daily rate or total days changes
+    function calculateTotalWage() {
+        const dailyRate = parseFloat(document.getElementById('daily_rate').value) || 0;
+        const totalDays = parseInt(document.getElementById('total_days').value) || 0;
+        const totalWage = dailyRate * totalDays;
+        document.getElementById('total_wage').value = totalWage.toFixed(2);
+    }
+
+    // Same for update form
+    function calculateUpdateTotalWage() {
+        const dailyRate = parseFloat(document.getElementById('update_daily_rate').value) || 0;
+        const totalDays = parseInt(document.getElementById('update_total_days').value) || 0;
+        const totalWage = dailyRate * totalDays;
+        document.getElementById('update_total_wage').value = totalWage.toFixed(2);
+    }
+
+    // Get present days when labour and project are selected
+    document.getElementById('labour_id').addEventListener('change', function() {
+        const labourId = this.value;
+        const projectId = document.getElementById('project_id').value;
+        if (labourId && projectId) {
+            fetchPresentDays(labourId, projectId);
+        }
+    });
+
+    document.getElementById('project_id').addEventListener('change', function() {
+        const projectId = this.value;
+        const labourId = document.getElementById('labour_id').value;
+        if (labourId && projectId) {
+            fetchPresentDays(labourId, projectId);
+        }
+    });
+
+    function fetchPresentDays(labourId, projectId) {
+        fetch(`/admin/get_labour_present_days?labour_id=${labourId}&project_id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('total_days').value = data.present_days;
+                    calculateTotalWage();
+                } else {
+                    console.error('Error fetching present days:', data.message);
+                    document.getElementById('total_days').value = 0;
+                    calculateTotalWage();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('total_days').value = 0;
+                calculateTotalWage();
+            });
+    }
+
+    // Set up event listeners for calculation
+    document.getElementById('daily_rate').addEventListener('input', calculateTotalWage);
+    document.getElementById('total_days').addEventListener('input', calculateTotalWage);
+    document.getElementById('update_daily_rate').addEventListener('input', calculateUpdateTotalWage);
+    document.getElementById('update_total_days').addEventListener('input', calculateUpdateTotalWage);
+
+    // Handle wage form submission
+    wageForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        // Disable submit button to prevent multiple submissions
+        const submitBtn = wageForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+        const formData = new FormData(wageForm);
+        const data = Object.fromEntries(formData.entries());
+
+        // Check if total days is zero
+        if (parseInt(data.total_days) === 0) {
+            alert("Cannot register wage for labour with zero present days");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Register Wage';
+            return;
+        }
+
+        try {
+            const response = await fetch("/admin/register_wages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                alert("Wage recorded successfully!");
+                window.location.href = result.redirect_url || '/admin/manage_wages';
+            } else {
+                alert(result.message || "Failed to record wage. Please check the details and try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to record wage. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Register Wage';
+        }
+    });
+
+ document.querySelectorAll(".edit-wage").forEach(button => {
+    button.addEventListener("click", function() {
+        const wageId = this.getAttribute("data-wage-id");
+        const currentLabourId = this.getAttribute("data-labour-id");
+        const currentProjectId = this.getAttribute("data-project-id");
+        
+        fetch(`/admin/get_wage/${wageId}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const wage = result.wage;
+                    document.getElementById("wage_id").value = wage.wage_id;
+                    document.getElementById("update_labour_id").value = wage.labour_id;
+                    document.getElementById("update_project_id").value = wage.project_id;
+                    document.getElementById("update_daily_rate").value = wage.daily_rate;
+                    document.getElementById("update_total_days").value = wage.total_days;
+                    document.getElementById("update_total_wage").value = wage.total_wage;
+
+                    // Store original values for validation
+                    document.getElementById("update_labour_id").setAttribute("data-original-labour", currentLabourId);
+                    document.getElementById("update_project_id").setAttribute("data-original-project", currentProjectId);
+
+                    const modal = new bootstrap.Modal(document.getElementById("updateWageModal"));
+                    modal.show();
+                } else {
+                    alert("Failed to load wage: " + result.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to load wage data.");
+            });
+    });
+});
+    // Handle update form submission
+  // Handle update form submission
+updateWageForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const labourId = document.getElementById('update_labour_id').value;
+    const projectId = document.getElementById('update_project_id').value;
+    
+    // First check if labour is assigned to project
+    try {
+        const response = await fetch(`/admin/check_labour_assignment?labour_id=${labourId}&project_id=${projectId}`);
+        const result = await response.json();
+        
+        if (!result.is_assigned) {
+            alert("This labour is not assigned to the selected project");
+            return;
+        }
+        
+        // If we got here, proceed with the update
+        const submitBtn = updateWageForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+
+        const formData = new FormData(updateWageForm);
+        const data = Object.fromEntries(formData.entries());
+
+        const updateResponse = await fetch("/admin/update_wage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const updateResult = await updateResponse.json();
+        if (updateResult.success) {
+            window.location.reload();
+        } else {
+            alert("Error: " + updateResult.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to update wage. Please try again.");
+    } finally {
+        const submitBtn = updateWageForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Update Wage';
+        }
+    }
+});
+
+// Handle delete buttons
+document.querySelectorAll(".delete-wage").forEach(button => {
+    button.addEventListener("click", function() {
+        currentDeleteId = this.getAttribute("data-wage-id");
+        deleteModal.show();
+    });
+});
+
+// Confirm delete
+document.getElementById("confirmDelete").addEventListener("click", async function() {
+    if (!currentDeleteId) return;
+
+    // Show loading state
+    const deleteBtn = this;
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+
+    try {
+        const response = await fetch(`/admin/delete_wage/${currentDeleteId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            // Refresh the page after successful delete
+            window.location.reload();
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to delete wage. Please try again.");
+    } finally {
+        deleteModal.hide();
+        currentDeleteId = null;
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = 'Yes, Delete';
+    }
+});
+});
+</script>
+
+{% endblock %}

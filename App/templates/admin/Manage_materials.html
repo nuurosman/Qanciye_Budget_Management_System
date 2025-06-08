@@ -1,0 +1,415 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+
+<!-- signin form start -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+
+        <div class="col-md-12">
+            <!-- Table Data start-->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this material?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         
+            <div class="container-fluid">
+                   <!-- Add Material Button -->
+            <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal" data-bs-target="#materialModal">
+                Add Material
+            </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="white-space: nowrap;">Material ID</th>
+                        <th style="white-space: nowrap;">Item Name</th>
+                        <th>Quantity</th>
+                        <th style="white-space: nowrap;">Unit Price</th>
+                        <th style="white-space: nowrap;">Total Amount</th>
+                         <th style="white-space: nowrap;">Project</th>
+                        <th style="white-space: nowrap;">Site Engineer/Admin</th>
+                        <th>Status</th> <!-- Added -->
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+             <tbody>
+    {% for material in materials %}
+    <tr>
+        <td>{{ material.material_id }}</td>
+        <td>{{ material.item_name }}</td>
+        <td>{{ material.quantity }}</td>
+        <td>${{ "%.2f"|format(material.unit_price) }}</td>
+        <td>${{ "%.2f"|format(material.amount) }}</td>
+        <td>{{ material.project_name }}</td>
+        <td>
+            {% if material.admin_name %}
+                {{ material.admin_name }} (Admin)
+            {% elif material.site_engineer_name %}
+                {{ material.site_engineer_name }} (Site Engineer)
+            {% else %}
+                Not Assigned
+            {% endif %}
+        </td>
+        <td>
+            {% if material.is_paid %}
+                <span class="badge bg-success">Paid</span>
+            {% else %}
+                <span class="badge bg-warning text-dark">Unpaid</span>
+            {% endif %}
+        </td>
+        <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else '' }}</td>
+        <td style="display: flex; gap: 3px;">
+            <!-- Edit Button -->
+            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateMaterialModal"
+                data-id="{{ material.material_id }}" data-item-name="{{ material.item_name }}" 
+                data-quantity="{{ material.quantity }}" data-unit-price="{{ material.unit_price }}" 
+                data-amount="{{ material.amount }}" style="display:inline;">
+                <i class="bi bi-pencil-square text-white"></i>
+            </button>
+
+            <!-- Delete Button -->
+            <button type="button" class="btn btn-sm btn-danger delete-button" data-material-id="{{ material.material_id }}">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+            </table>
+            </div>
+            </div>
+            </div>
+            </div>
+            <!-- Material Registration Modal -->
+            <div class="modal fade" id="materialModal" tabindex="-1" aria-labelledby="materialModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="materialModalLabel">Material Registration</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="materialForm" method="POST" action="/register_material">
+                                <div class="mb-3">
+                                    <label for="item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="item_name" name="item_name" placeholder="Enter item name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="unit_price" class="form-label">Unit Price</label>
+                                    <input type="number" class="form-control" id="unit_price" name="unit_price" placeholder="Enter unit price" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Total Amount</label>
+                                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter total amount" step="0.01" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                    </select>
+                                </div>
+                                  <input type="hidden" id="admin_id" name="admin_id"
+                                    value="{{ current_admin.id if current_admin else '' }}">
+                                <div class="mb-3">
+                                    <label for="admin_name" class="form-label">Admin</label>
+                                    <input type="text" class="form-control" id="admin_name" name="admin_name"
+                                        value="{{ current_admin.name if current_admin else 'No admin found' }}"
+                                        readonly>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register Material</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Update Modal -->
+            <div class="modal fade" id="updateMaterialModal" tabindex="-1" aria-labelledby="updateMaterialModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateMaterialModalLabel">Update Material</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateMaterialForm" method="POST" action="/update_material">
+                                <input type="hidden" id="material_id" name="material_id">
+                                <div class="mb-3">
+                                    <label for="update_item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="update_item_name" name="item_name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="update_quantity" name="quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_unit_price" class="form-label">Unit Price</label>
+                                    <input type="number" class="form-control" id="update_unit_price" name="unit_price" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_amount" class="form-label">Total Amount</label>
+                                    <input type="number" class="form-control" id="update_amount" name="amount" step="0.01" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="update_project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Material</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const materialForm = document.getElementById("materialForm");
+                    const quantityInput = document.getElementById("quantity");
+                    const unitPriceInput = document.getElementById("unit_price");
+                    const amountInput = document.getElementById("amount");
+                    const projectIdInput = document.getElementById("project_id");
+
+                    const updateMaterialForm = document.getElementById("updateMaterialForm");
+                    const updateQuantityInput = document.getElementById("update_quantity");
+                    const updateUnitPriceInput = document.getElementById("update_unit_price");
+                    const updateAmountInput = document.getElementById("update_amount");
+                    const updateProjectIdInput = document.getElementById("update_project_id");
+
+                    function calculateAmount(quantityInput, unitPriceInput, amountInput) {
+                        const quantity = parseFloat(quantityInput.value) || 0;
+                        const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                        amountInput.value = (quantity * unitPrice).toFixed(2);
+                    }
+
+                    quantityInput.addEventListener("input", () => calculateAmount(quantityInput, unitPriceInput, amountInput));
+                    unitPriceInput.addEventListener("input", () => calculateAmount(quantityInput, unitPriceInput, amountInput));
+
+                    updateQuantityInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
+                    updateUnitPriceInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
+
+                    materialForm.addEventListener("submit", async (event) => {
+                        event.preventDefault(); // Prevent default form submission
+
+                        // Gather form data
+                        const formData = new FormData(materialForm);
+                        const data = Object.fromEntries(formData);
+
+                        // Validate that item_name is not empty
+                        if (!data.item_name) {
+                            alert("Item name is required.");
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch("/register_material", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(data),
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(result.message);
+                                materialForm.reset(); // Reset the form
+                                location.reload(); // Reload the page to reflect changes
+                            } else {
+                                alert("Error: " + result.message);
+                            }
+                        } catch (error) {
+                            console.error("Registration Error:", error);
+                            alert("An error occurred during registration.");
+                        }
+                    });
+
+                    updateMaterialForm.addEventListener("submit", async (event) => {
+                        event.preventDefault(); // Prevent default form submission
+
+                        // Gather form data
+                        const formData = new FormData(updateMaterialForm);
+                        const data = Object.fromEntries(formData);
+
+                        try {
+                            const response = await fetch("/update_material", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(data),
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(result.message);
+                                updateMaterialForm.reset(); // Reset the form
+                                location.reload(); // Reload the page to reflect changes
+                            } else {
+                                alert("Error: " + result.message);
+                            }
+                        } catch (error) {
+                            console.error("Update Error:", error);
+                            alert("An error occurred during update.");
+                        }
+                    });
+
+                    document.querySelectorAll(".delete-button").forEach(button => {
+                        button.addEventListener("click", function () {
+                            const materialId = this.getAttribute("data-material-id");
+                            const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+                            document.getElementById("confirmDelete").addEventListener("click", function () {
+                                fetch(`/delete_material/${materialId}`, {
+                                    method: "POST"
+                                }).then(response => {
+                                    if (response.ok) {
+                                        location.reload();
+                                    } else {
+                                        alert("Error deleting material.");
+                                    }
+                                }).catch(error => {
+                                    console.error("Delete Error:", error);
+                                    alert("An error occurred during deletion.");
+                                });
+                            });
+                            deleteModal.show();
+                        });
+                    });
+
+                    // Update Material Modal: fill fields on show
+                    const updateModal = document.getElementById('updateMaterialModal');
+                    updateModal.addEventListener('show.bs.modal', (event) => {
+                        const button = event.relatedTarget;
+                        const materialId = button.getAttribute('data-id');
+                        fetch(`/get_material/${materialId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const material = data.material;
+                                    document.getElementById('material_id').value = material[0];
+                                    document.getElementById('update_item_name').value = material[1];
+                                    document.getElementById('update_quantity').value = material[2];
+                                    document.getElementById('update_unit_price').value = material[3];
+                                    document.getElementById('update_amount').value = material[4];
+                                    // Populate projects dropdown
+                                    fetch('/get_dropdown_data')
+                                        .then(response => response.json())
+                                        .then(dropdownData => {
+                                            const projectDropdown = document.getElementById("update_project_id");
+                                            projectDropdown.innerHTML = '<option value="" disabled>Select a project</option>';
+                                            dropdownData.projects.forEach(project => {
+                                                let option = document.createElement("option");
+                                                option.value = project.id;
+                                                option.textContent = project.name;
+                                                if (project.id == material[6]) option.selected = true;
+                                                projectDropdown.appendChild(option);
+                                            });
+                                        });
+                                } else {
+                                    alert("Error: " + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error fetching material details:", error);
+                                alert("An error occurred while fetching material details.");
+                            });
+                    });
+
+                    function fetchProjects() {
+                        return fetch('/get_dropdown_data')
+                            .then(response => response.json())
+                            .then(data => {
+                                // Populate projects
+                                const projectDropdown = document.getElementById("project_id");
+                                projectDropdown.innerHTML = '<option value="" disabled selected>Select a project</option>';
+                                data.projects.forEach(project => {
+                                    let option = document.createElement("option");
+                                    option.value = project.id;
+                                    option.textContent = project.name;
+                                    projectDropdown.appendChild(option);
+                                });
+                            })
+                            .catch(error => console.error('Error fetching projects:', error));
+                    }
+
+                    projectIdInput.addEventListener("change", () => {
+                        calculateAmountAndUpdateBudget(quantityInput, unitPriceInput, amountInput, projectIdInput);
+                    });
+
+                    updateProjectIdInput.addEventListener("change", () => {
+                        calculateAmountAndUpdateBudget(updateQuantityInput, updateUnitPriceInput, updateAmountInput, updateProjectIdInput);
+                    });
+                });
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Only fetch and populate projects
+                    fetch('/get_dropdown_data')
+                        .then(response => response.json())
+                        .then(data => {
+                            // Populate projects
+                            const projectDropdown = document.getElementById("project_id");
+                            projectDropdown.innerHTML = '<option value="" disabled selected>Select a project</option>';
+                            data.projects.forEach(project => {
+                                let option = document.createElement("option");
+                                option.value = project.id;
+                                option.textContent = project.name;
+                                projectDropdown.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching dropdown data:', error));
+                });
+
+                // Add this to your admin template's JavaScript
+function refreshMaterials() {
+    fetch('/manage_materials_data')
+        .then(response => response.json())
+        .then(data => {
+            // Update the table with new data
+            updateTable(data.materials);
+        });
+}
+
+// Refresh every 10 seconds
+setInterval(refreshMaterials, 10000);
+            </script>
+
+            
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

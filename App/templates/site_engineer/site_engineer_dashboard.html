@@ -1,0 +1,265 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="page-inner">
+    <h1>Welcome to the Site Engineer Dashboard</h1>
+    <div class="row">
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-primary bubble-shadow-small">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Assigned Labourers</p>
+                  <h4 class="card-title">{{ labourers_assigned_count }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-info bubble-shadow-small">
+                  <i class="bi bi-kanban"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Active Projects</p>
+                  <h4 class="card-title">{{ total_projects_count }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-success bubble-shadow-small">
+                  <i class="bi bi-pie-chart"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Materials Count</p>
+                  <h4 class="card-title">{{ materials_count }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                  <i class="bi bi-cash-coin"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Wages Count</p>
+                  <h4 class="card-title">{{ wages_count }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Project Status</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>Ongoing: {{ projects_status.ongoing }}</li>
+              <li>Completed: {{ projects_status.completed }}</li>
+              <li>Pending: {{ projects_status.pending }}</li>
+              <li>Planned: {{ projects_status.planned }}</li>
+            </ul>
+          </div>
+        </div>
+      </div> 
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Budget Allocation</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>Material: {{ budget_allocation.material }}</li>
+              <li>Wages: {{ budget_allocation.wages }}</li>
+              <li>Expenses: {{ budget_allocation.expenses }}</li>
+              <li>Remaining: {{ budget_allocation.remaining }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>  -->
+ <div class="col-md-6">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Project Status</div>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="projectStatusChart" style="width: 100%; height: 300px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Budget Allocation</div>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="budgetChart" style="width: 100%; height: 300px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the data from the template variables
+    const projectsStatus = JSON.parse('{{ projects_status | tojson | safe }}');
+    const budgetAllocation = JSON.parse('{{ budget_allocation | tojson | safe }}');
+
+    // Project Status Doughnut Chart
+    const projectCtx = document.getElementById('projectStatusChart').getContext('2d');
+    const projectStatusChart = new Chart(projectCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ongoing', 'Completed', 'Pending', 'Planned'],
+        datasets: [{
+          data: [
+            projectsStatus.ongoing || 0,
+            projectsStatus.completed || 0,
+            projectsStatus.pending || 0,
+            projectsStatus.planned || 1
+          ],
+          backgroundColor: [
+            'rgb(255, 99, 132)',    // Red for Ongoing
+            'rgb(54, 162, 235)',    // Blue for Completed
+            'rgb(255, 205, 86)',    // Yellow for Pending
+            'rgb(75, 192, 192)'     // Teal for Planned
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.raw} project${context.raw !== 1 ? 's' : ''}`;
+              }
+            }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+
+    // Budget Allocation Bar Chart
+    const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+    const budgetChart = new Chart(budgetCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Material', 'Wages', 'Used Amount', 'Remaining', 'Total Budget', 'Expenses'],
+        datasets: [{
+          label: 'Budget Allocation',
+          data: [
+            budgetAllocation.material || 0,
+            budgetAllocation.wages || 0,
+            budgetAllocation.usedAmount || 0,
+            budgetAllocation.remaining || 0,
+            budgetAllocation.total || 0,
+            budgetAllocation.other || 0
+          ],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 205, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 205, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Amount ($)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Budget Categories'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `$${context.raw.toLocaleString()}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+</script>   
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

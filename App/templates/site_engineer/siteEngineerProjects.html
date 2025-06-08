@@ -1,0 +1,63 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+<div class="container-lg mt-5">
+  <div class="row mx-2 ">
+    <h1>Projects page for Site Labour</h1>
+
+      
+    {% for project in projects %}
+    <div class="col-md-4 ">
+      <div class="card shadow-md mb-4">
+        <div class="card-body ">
+          
+          <div class="row align-items-center mb-4">
+            <div class="col-2">
+              <div class=" shadow-lg bg-primary bg-sm text-center py-1 rounded" style="width: 40px; height: 40px;">
+                <i class="bi bi-diagram-3 text-white fs-3  "></i>
+            </div>
+            </div>
+            <div class="col">
+              <h5 class="card-title">{{ project.name }}</h5>
+            </div>
+          </div>
+          
+          <h6 class="card-subtitle mb-2 text-muted">Status: {{ project.status }}</h6>
+          <p class="card-text">
+            <strong>Start Date:</strong> {{ project.start_date }}<br>
+            <strong>End Date:</strong> {{ project.end_date }}<br>
+            <strong>Total Budget:</strong> ${{ "{:,.2f}".format(project.total_budget or 0) }}
+          </p>
+          <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#projectDetails{{ project.project_id }}" aria-expanded="false" aria-controls="projectDetails{{ project.project_id }}">
+            More Detail
+          </button>
+          <div class="collapse mt-3" id="projectDetails{{ project.project_id }}">
+            <div class="card card-body">
+              <p><strong>Project ID:</strong> {{ project.project_id }}</p>
+              <p><strong>Description:</strong> {{ project.description }}</p>
+              <p><strong>Material Budget:</strong> ${{ project.material_budget }}</p>
+              <p><strong>Wages Budget:</strong> ${{ project.wages_budget }}</p>
+              <p><strong>Other Expenses:</strong> ${{ project.other_expenses_budget }}</p>
+              <p><strong>Used Budget:</strong> ${{ "{:,.2f}".format(project.used_budget or 0) }}</p>
+              <p><strong>Remaining Budget:</strong> ${{ "{:,.2f}".format((project.total_budget - project.used_budget) or 0) }}</p>
+              <p><strong>Site Engineer ID:</strong> {{ project.site_engineer_id }}</p>
+              <p><strong>Admin ID:</strong> {{ project.admin_id }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-md-4 ">
+      <div class="card shadow-md mb-4">
+        <div class="card-body ">
+          <h5 class="card-title"><i class="bi bi-slash-circle text-white fs-2 shadow-lg bg-danger bg-sm text-center py-1 px-2 rounded"></i>
+            No projects assigned yet!</h5>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

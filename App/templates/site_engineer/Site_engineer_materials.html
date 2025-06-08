@@ -1,0 +1,523 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+
+<!-- signin form start -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+
+        <div class="col-md-12">
+            <!-- Table Data start-->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this material?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                <!-- Add Material Button -->
+                <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal"
+                    data-bs-target="#materialModal">
+                    Add Material
+                </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th style="white-space: nowrap;">Material ID</th>
+                                        <th style="white-space: nowrap;">Item Name</th>
+                                        <th>Quantity</th>
+                                        <th style="white-space: nowrap;">Unit Price</th>
+                                        <th style="white-space: nowrap;">Total Amount</th>
+                                        <th style="white-space: nowrap;">Project</th> <!-- Added Project column -->
+                                        <th style="white-space: nowrap;">Site Engineer/Admin</th>
+                                        <th>Status</th> <!-- Added Paid/Unpaid column -->
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                            <tbody>
+    {% for material in materials %}
+    <tr>
+        <td>{{ material.material_id }}</td>
+        <td>{{ material.item_name }}</td>
+        <td>{{ material.quantity }}</td>
+        <td>${{ "%.2f"|format(material.unit_price) }}</td>
+        <td>${{ "%.2f"|format(material.amount) }}</td>
+        <td>{{ material.project }}</td>
+        <td>
+            {% if material.admin_name %}
+                {{ material.admin_name }} (Admin)
+            {% elif material.site_engineer_name %}
+                {{ material.site_engineer_name }} (Site Engineer)
+            {% else %}
+                Not Assigned
+            {% endif %}
+        </td>
+        <td>
+            {% if material.is_paid %}
+                <span class="badge bg-success">Paid</span>
+            {% else %}
+                <span class="badge bg-warning text-dark">Unpaid</span>
+            {% endif %}
+        </td>
+        <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else '' }}</td>
+        <td style="display: flex; gap: 3px;">
+            <!-- Edit Button -->
+            <button class="btn btn-sm btn-warning" 
+                data-bs-toggle="modal"
+                data-bs-target="#updateMaterialModal" 
+                data-id="{{ material.material_id }}"
+                data-item-name="{{ material.item_name }}" 
+                data-quantity="{{ material.quantity }}"
+                data-unit-price="{{ material.unit_price }}" 
+                data-amount="{{ material.amount }}"
+                data-project-id="{{ material.project_id }}"
+                data-site-engineer-id="{{ material.site_engineer_id }}"
+                data-site-engineer-name="{{ material.site_engineer_name }}">
+                <i class="bi bi-pencil-square text-white"></i>
+            </button>
+
+            <!-- Delete Button -->
+            <button 
+                class="btn btn-sm btn-danger delete-button"
+                data-material-id="{{ material.material_id }}"
+                data-delete-url="/delete_materials/">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Material Registration Modal -->
+            <div class="modal fade" id="materialModal" tabindex="-1" aria-labelledby="materialModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="materialModalLabel">Material Registration</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="materialForm" method="POST" action="/register_material">
+                                <!-- <input type="hidden" id="site_engineer_id" value="{{ site_engineer_id }}" name="site_engineer_id"> -->
+                                <input type="hidden" id="site_engineer_id" name="site_engineer_id"
+                                    value="{{ session.site_engineer_id }}">
+
+                                <div class="mb-3">
+                                    <label for="item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="item_name" name="item_name"
+                                        placeholder="Enter item name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity"
+                                        placeholder="Enter quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="unit_price" class="form-label">Unit Price</label>
+                                    <input type="number" class="form-control" id="unit_price" name="unit_price"
+                                        placeholder="Enter unit price" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Total Amount</label>
+                                    <input type="number" class="form-control" id="amount" name="amount"
+                                        placeholder="Enter total amount" step="0.01" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                
+
+                                </div>
+                                <div class="mb-3">
+                                    <label for="site_engineer_name" class="form-label">Site Engineer</label>
+                                    <input type="text" class="form-control" id="site_engineer_name"
+                                        name="site_engineer_name" value="{{ site_engineer_name }}" readonly>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register Material</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Update Modal -->
+            <div class="modal fade" id="updateMaterialModal" tabindex="-1" aria-labelledby="updateMaterialModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateMaterialModalLabel">Update Material</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateMaterialForm" method="POST" action="/update_materials">
+                                <input type="hidden" id="material_id" name="material_id">
+                                <input type="hidden" id="site_engineer_id" name="site_engineer_id" value="{{ session.site_engineer_id }}">
+                                
+                                <div class="mb-3">
+                                    <label for="update_item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="update_item_name" name="update_item_name" placeholder="Enter item name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="update_quantity" name="quantity" placeholder="Enter quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_unit_price" class="form-label">Unit Price</label>
+                                    <input type="number" class="form-control" id="update_unit_price" name="unit_price" placeholder="Enter unit price" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_amount" class="form-label">Total Amount</label>
+                                    <input type="number" class="form-control" id="update_amount" name="amount" placeholder="Enter total amount" step="0.00" required readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="update_project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Material</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const materialForm = document.getElementById("materialForm");
+                    const updateMaterialForm = document.getElementById("updateMaterialForm");
+                    const itemNameInput = document.getElementById("item_name");
+                    const quantityInput = document.getElementById("quantity");
+                    const unitPriceInput = document.getElementById("unit_price");
+                    const amountInput = document.getElementById("amount");
+                    const projectIdInput = document.getElementById("project_id");
+                    const siteEngineerIdInput = document.getElementById("site_engineer_id");
+
+                    const itemNameUpdateInput = document.getElementById("update_item_name");
+                    const updateQuantityInput = document.getElementById("update_quantity");
+                    const updateUnitPriceInput = document.getElementById("update_unit_price");
+                    const updateAmountInput = document.getElementById("update_amount");
+                    const updateProjectIdInput = document.getElementById("update_project_id");
+                    const updateSiteEngineerIdInput = document.getElementById("update_site_engineer_id");
+
+                    function calculateAmount(qtyInput, priceInput, amountOutput) {
+                        const quantity = parseFloat(qtyInput.value) || 0;
+                        const price = parseFloat(priceInput.value) || 0;
+                        amountOutput.value = (quantity * price).toFixed(2);
+                    }
+
+                    quantityInput.addEventListener("input", () => calculateAmount(quantityInput, unitPriceInput, amountInput));
+                    unitPriceInput.addEventListener("input", () => calculateAmount(quantityInput, unitPriceInput, amountInput));
+
+                    updateQuantityInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
+                    updateUnitPriceInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
+
+                    console.log("Site Engineer ID:", document.getElementById("site_engineer_id").value);
+                    console.log("Project ID:", document.getElementById("project_id").value);
+                    materialForm.addEventListener("submit", async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(materialForm);
+
+                        // Get the site_engineer_id from the hidden input
+                        const siteEngineerId = document.getElementById("site_engineer_id").value;
+                        const projectId = document.getElementById("project_id").value;
+
+                        // Create the data object manually to ensure all fields are included
+                        const data = {
+                            item_name: formData.get('item_name'),
+                            quantity: formData.get('quantity'),
+                            unit_price: formData.get('unit_price'),
+                            amount: formData.get('amount'),
+                            project_id: projectIdInput.value,  // Get from select element
+                            site_engineer_id: siteEngineerId
+                        };
+
+                        console.log("Form data:", data);
+
+                        if (!data.item_name || !data.quantity || !data.unit_price || !data.amount || !data.project_id || !data.site_engineer_id) {
+                            alert("Please fill in all required fields.");
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch("/site_engineer/materials/create", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(data),
+                            });
+
+                            const result = await response.json();
+                            if (result.success) {
+                                alert(result.message);
+                                materialForm.reset();
+                                location.reload();
+                            } else {
+                                alert(result.message || "An error occurred.");
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                            alert("Failed to save material.");
+                        }
+                    });
+                    document.querySelectorAll(".delete-button").forEach(button => {
+    button.addEventListener("click", function () {
+        const materialId = this.getAttribute("data-material-id");
+        const deleteUrl = this.getAttribute("data-delete-url");
+        const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+        const confirmButton = document.getElementById("confirmDelete");
+
+        // Store the ID in a data attribute temporarily
+        confirmButton.setAttribute("data-material-id", materialId);
+        confirmButton.setAttribute("data-delete-url", deleteUrl);
+
+        deleteModal.show();
+    });
+});
+
+    // Handle delete confirmation only once, outside the loop
+    document.getElementById("confirmDelete").addEventListener("click", async function () {
+        const materialId = this.getAttribute("data-material-id");
+        const deleteUrl = this.getAttribute("data-delete-url");
+
+        try {
+            const response = await fetch(`${deleteUrl}${materialId}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(errorData || "Failed to delete material");
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (error) {
+            console.error("Delete Error:", error);
+            alert("Error: " + error.message);
+        }
+    });
+
+document.getElementById('updateMaterialModal').addEventListener('show.bs.modal', function(event) {
+    const button = event.relatedTarget;
+    
+    const materialData = {
+        id: button.getAttribute('data-id'),
+        name: button.getAttribute('data-item-name'),
+        quantity: button.getAttribute('data-quantity'),
+        price: button.getAttribute('data-unit-price'),
+        amount: button.getAttribute('data-amount'),
+        projectId: button.getAttribute('data-project-id')
+    };
+    
+    console.log('Material Data:', materialData);
+
+    // Validate material ID exists
+    if (!materialData.id) {
+        console.error('No material ID found in button data attributes');
+        return;
+    }
+
+    document.getElementById('material_id').value = materialData.id;
+    document.getElementById('update_item_name').value = materialData.name;
+    document.getElementById('update_quantity').value = materialData.quantity;
+    document.getElementById('update_unit_price').value = materialData.price;
+    document.getElementById('update_amount').value = materialData.amount;
+    
+    // Set project ID with verification
+    const projectSelect = document.getElementById('update_project_id');
+    if (materialData.projectId) {
+        // Convert to number to ensure strict comparison
+        const projectIdNum = Number(materialData.projectId);
+        
+        // Find the option that matches the project ID
+        for (let option of projectSelect.options) {
+            if (Number(option.value) === projectIdNum) {
+                option.selected = true;
+                break;
+            }
+        }
+        
+        // Verify selection
+        if (Number(projectSelect.value) !== projectIdNum) {
+            console.warn('Project ID mismatch, retrying...');
+            setTimeout(() => {
+                for (let option of projectSelect.options) {
+                    if (Number(option.value) === projectIdNum) {
+                        option.selected = true;
+                        console.log('Project selection after timeout:', option.value);
+                        break;
+                    }
+                }
+            }, 100);
+        }
+    }
+});
+document.getElementById('updateMaterialForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const data = {
+        material_id: parseInt(form.material_id.value),
+        item_name: form.update_item_name.value.trim(),
+        quantity: parseInt(form.update_quantity.value),
+        unit_price: parseFloat(form.update_unit_price.value),
+        project_id: parseInt(form.update_project_id.value)
+    };
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    // Re-enable after fetch
+    submitButton.disabled = false;
+
+    // Validate inputs
+    if (!data.item_name || isNaN(data.quantity) || isNaN(data.unit_price) || isNaN(data.project_id)) {
+        alert('Please fill all fields with valid values');
+        return;
+    }
+
+    // Calculate amount to ensure accuracy
+    data.amount = data.quantity * data.unit_price;
+
+    console.log("Submitting data:", data);
+
+    try {
+        // First verify the material exists
+        const verifyResponse = await fetch(`/update_materials_/${data.material_id}`);
+        if (!verifyResponse.ok) {
+            const verifyError = await verifyResponse.json();
+            throw new Error(verifyError.message || 'Failed to verify material');
+        }
+
+        const verifyResult = await verifyResponse.json();
+        if (!verifyResult.success) {
+            throw new Error(verifyResult.message || 'Material not found');
+        }
+
+        // Then proceed with update
+        const response = await fetch('/update_materials', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const updateError = await response.json();
+            throw new Error(updateError.message || 'Update failed');
+        }
+
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.message || 'Update failed');
+        }
+
+        alert('Material updated successfully!');
+        location.reload();
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('Error: ' + error.message);
+    }
+});
+// Optional: Live budget checker
+function checkBudgetAndWarn(qtyInput, priceInput, projectInput, output) {
+    const quantity = parseFloat(qtyInput.value) || 0;
+    const price = parseFloat(priceInput.value) || 0;
+    const total = (quantity * price).toFixed(2);
+    output.value = total;
+
+    const projectId = projectInput.value;
+    if (projectId) {
+        fetch(`/site_engineer/materials/project_budget/${projectId}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Network response was not ok");
+                return res.json();
+            })
+            .then(data => {
+                // Handle both success cases and error cases
+                const budget = data?.budget ?? 0;
+                const remaining = (budget - total).toFixed(2);
+                const remainingElement = document.getElementById("remaining_budget");
+                
+                if (remainingElement) {
+                    remainingElement.textContent = `Remaining: $${remaining}`;
+                    if (remaining < 0) {
+                        alert("Budget exceeded!");
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Budget fetch error:", err);
+                const remainingElement = document.getElementById("remaining_budget");
+                if (remainingElement) {
+                    remainingElement.textContent = "Budget info unavailable";
+                }
+            });
+    }
+}
+
+// Add this hidden input to your form for material_id
+// <input type="hidden" id="material_id" name="material_id">
+                //     quantityInput.addEventListener("input", () => checkBudgetAndWarn(quantityInput, unitPriceInput, projectIdInput, amountInput));
+                //     unitPriceInput.addEventListener("input", () => checkBudgetAndWarn(quantityInput, unitPriceInput, projectIdInput, amountInput));
+                //     projectIdInput.addEventListener("change", () => checkBudgetAndWarn(quantityInput, unitPriceInput, projectIdInput, amountInput));
+
+                //     updateQuantityInput.addEventListener("input", () => checkBudgetAndWarn(updateQuantityInput, updateUnitPriceInput, updateProjectIdInput, updateAmountInput));
+                //     updateUnitPriceInput.addEventListener("input", () => checkBudgetAndWarn(updateQuantityInput, updateUnitPriceInput, updateProjectIdInput, updateAmountInput));
+                //     updateProjectIdInput.addEventListener("change", () => checkBudgetAndWarn(updateQuantityInput, updateUnitPriceInput, updateProjectIdInput, updateAmountInput));
+                });
+            </script>
+
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

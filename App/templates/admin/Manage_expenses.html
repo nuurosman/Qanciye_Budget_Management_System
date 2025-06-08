@@ -1,0 +1,338 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+
+<!-- signin form start -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+
+        <div class="col-md-12">
+            <!-- Table Data start-->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this material?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         
+            <div class="container-fluid">
+                   <!-- Add Material Button -->
+            <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal" data-bs-target="#expensesModal">
+                Add Expenses
+            </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="white-space: nowrap;">Expenses ID</th>
+                        <th style="white-space: nowrap;">Project</th>
+                        <th style="white-space: nowrap;">Item Name</th>
+                        <th style="white-space: nowrap;">Amount</th>
+                        <th style="white-space: nowrap;">Description</th>
+                        <th style="white-space: nowrap;">Registered By</th>
+                        <th style="white-space: nowrap;">Expense Type</th>
+                        <th style="white-space: nowrap;">Status</th> <!-- Added -->
+                        <th style="white-space: nowrap;">Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in Expenses %}
+                    <tr>
+                        <td>{{ expense.expense_id }}</td>
+                        <td data-project-id="{{ expense.project_id }}">{{ expense.project_name }}</td>
+                        <td>{{ expense.item_name }}</td>
+                        <td>${{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                        <td>
+                            {% if expense.admin_name %}
+                                {{ expense.admin_name }} (Admin)
+                            {% elif expense.site_engineer_name %}
+                                {{ expense.site_engineer_name }} (Engineer)
+                            {% endif %}
+                        </td>
+                        <td>{{ expense.expense_type }}</td>
+                        <td>
+                            {% if expense.is_paid %}
+                                <span class="badge bg-success">Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ expense.created_at.strftime('%Y-%m-%d') if expense.created_at else '' }}</td>
+                        <td style="display: flex; gap: 3px;">
+                            <!-- Edit Button -->
+                            <button class="btn btn-sm btn-warning edit-expense"
+                                data-bs-toggle="modal" data-bs-target="#updateExpensesModal"
+                                data-expense-id="{{ expense.expense_id }}"
+                                data-item-name="{{ expense.item_name }}"
+                                data-amount="{{ expense.amount }}"
+                                data-description="{{ expense.description }}"
+                                data-expense-type="{{ expense.expense_type }}"
+                                data-project-id="{{ expense.project_id }}">
+                                <i class="bi bi-pencil-square text-white"></i>
+                            </button>
+                            <!-- Delete Button -->
+                            <button type="button" class="btn btn-sm btn-danger delete-button" data-expense-id="{{ expense.expense_id }}">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            </div>
+            </div>
+            </div>
+            <!-- Expenses Registration Modal -->
+            <div class="modal fade" id="expensesModal" tabindex="-1" aria-labelledby="materialModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="materialModalLabel">Expenses Registration</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="expenseForm" method="POST" action="/register_expense">
+                                <div class="mb-3">
+                                    <label for="item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="item_name" name="item_name" placeholder="Enter item name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" placeholder="Enter Expenses description" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Admin</label>
+                                    <input type="text" class="form-control" value="{{ admin_name }}" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                        {% for project in projects %}
+                                            <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expense_type" class="form-label">Expense Type</label>
+                                    <select class="form-select" id="expense_type" name="expense_type" required>
+                                        <option value="" disabled selected>Select an expense type</option>
+                                        <option value="material">Material</option>
+                                        <option value="wages">Wages</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register Expenses</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses Update Modal -->
+            <div class="modal fade" id="updateExpensesModal" tabindex="-1" aria-labelledby="updateExpensesModal" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateExpensesModal">Update Expenses</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateExpenseForm" method="POST" action="/update_expenses">
+                                <input type="hidden" id="expense_id" name="expense_id">
+                                <div class="mb-3">
+                                    <label for="update_item_name" class="form-label">Item Name</label>
+                                    <input type="text" class="form-control" id="update_item_name" name="item_name" required>
+                                </div>
+                               
+                                <div class="mb-3">
+                                    <label for="update_amount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="update_amount" name="amount" step="0.0" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="update_description" name="description" placeholder="Enter Expenses description" required></textarea>
+                                </div>
+                                  <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select a project</option>
+                                        {% for project in projects %}
+                                            <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="admin_name" class="form-label">Admin</label>
+                                    <input type="text" class="form-control" id="Admin_name" 
+                                    name="admin_name" value="{{ admin_name }}" readonly>
+                                      
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="update_expense_type" class="form-label">Expense Type</label>
+                                    <select class="form-select" id="update_expense_type" name="expense_type" required>
+                                        <option value="" disabled selected>Select an expense type</option>
+                                        <option value="material">Material</option>
+                                        <option value="wages">Wages</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Expenses</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteExpenseModal" tabindex="-1" aria-labelledby="deleteExpenseModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteExpenseModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this expense?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDeleteExpense" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const expenseForm = document.getElementById("expenseForm");
+    const updateExpenseForm = document.getElementById("updateExpenseForm");
+    const deleteExpenseModal = new bootstrap.Modal(document.getElementById("deleteExpenseModal"));
+    const confirmDeleteExpenseButton = document.getElementById("confirmDeleteExpense");
+    let currentDeleteId = null;
+
+    // Handle expense registration
+    expenseForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(expenseForm);
+        const data = Object.fromEntries(formData.entries());
+        data.admin_id = "{{ session.get('admin_id') }}";
+        try {
+            const response = await fetch("/register_expense", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred.");
+        }
+    });
+
+    // Populate update modal with correct data
+    document.querySelectorAll(".edit-expense").forEach(button => {
+        button.addEventListener("click", function() {
+            document.getElementById("expense_id").value = this.getAttribute("data-expense-id");
+            document.getElementById("update_item_name").value = this.getAttribute("data-item-name");
+            document.getElementById("update_amount").value = this.getAttribute("data-amount");
+            document.getElementById("update_description").value = this.getAttribute("data-description");
+            document.getElementById("update_expense_type").value = this.getAttribute("data-expense-type");
+            document.getElementById("project_id").value = this.getAttribute("data-project-id");
+        });
+    });
+
+    // Handle expense update
+    updateExpenseForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(updateExpenseForm);
+        const data = Object.fromEntries(formData.entries());
+        try {
+            const response = await fetch("/update_expense", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred.");
+        }
+    });
+
+    // Handle expense deletion
+    document.querySelectorAll(".delete-button").forEach(button => {
+        button.addEventListener("click", function () {
+            currentDeleteId = this.getAttribute("data-expense-id");
+            deleteExpenseModal.show();
+        });
+    });
+    confirmDeleteExpenseButton.onclick = async () => {
+        if (!currentDeleteId) return;
+        try {
+            const response = await fetch(`/delete_expense/${currentDeleteId}`, { method: "POST" });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            console.error("Delete Error:", error);
+            alert("An error occurred during deletion.");
+        }
+        deleteExpenseModal.hide();
+        currentDeleteId = null;
+    };
+});
+</script>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

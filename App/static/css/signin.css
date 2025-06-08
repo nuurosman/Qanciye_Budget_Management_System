@@ -1,0 +1,306 @@
+img{
+    width: 150px;
+    height: auto;
+}
+.navbar{
+    margin-top: -15px;
+}
+.navbar{
+ position: sticky;
+ z-index: 1000000;
+ left: 0;
+ right: 0;
+ top: 0;
+
+ 
+  margin-top: -1px;
+}
+.signin-signup-btn button{
+  color: #213F72;
+  outline: 2px;
+  border: 2px solid #C6345F;
+}
+.signin-signup-btn button:hover{
+  outline: 2px;
+  background-color:  #C6345F;
+  color: white;
+  transition: all 0.5s ease-out;
+}
+
+.hero-image{
+  width: 35em;
+  background-color: #C6345F;
+}
+.small-dream{
+  color:#C6345F;
+  font-size: 1.5rem;
+  margin-bottom: 1em;
+  
+}
+.read-more button{
+  background-color: #C6345F;
+  font-size: 1em;
+  font-weight:bold;
+  color:white;
+  margin-top: 1rem;
+}
+.read-more button:hover{
+  background-color:#213F72;
+  font-size: 1em;
+  color:white;
+  transition: all 0.5 ease-in-out;
+}
+.read-btn button{
+  border: 2px solid #C6345F;
+  font-size: 1em;
+  font-weight:bold;
+  color: black;
+  margin-top: 1rem;
+}
+.read-btn button:hover{
+  background-color: #C6345F;
+  font-size: 1em;
+  color:white;
+  transition: all 0.5 ease-in-out;
+}
+
+/* About section start */
+  .back-home h2:hover {
+    color: #C6345F;
+  }
+/* about section continue */
+.wraber-image img{
+  width: 35em;
+}
+/* sign in section */
+.signin-page{
+background-color:#213F72;
+background-image: url('/static/images/shanghai-china-skyscrapers-old-iron-bridge.jpg');
+background-repeat: no-repeat;
+background-size: cover;
+background-position: center;
+}
+.signin-page::before{
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color:#213F72;
+  opacity: 0.78;
+  
+}
+.form-style{
+  /* background-color: #213F72; */
+  border-radius: 1rem;
+  z-index: 1;
+
+}
+.logo-image{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  
+}
+/* about continue start */
+.aboutus-continue{
+  /* padding: 5rem 9rem 5rem 9rem ; */
+}
+.about-hr{
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 1em;
+  /* justify-content: center; */
+}
+.about-hr small{
+  font-size: 25px;
+  color: #C6345F;
+}
+.line{
+ background-color: #C6345F;
+ width: 4rem;
+ height: 2px;
+}
+.roof-repair {
+
+}
+/* .wraber-image {
+  width: 500px; 
+  height: 400px;
+  overflow: hidden;
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 40% 100%); 
+}
+
+.wraber-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+} */
+/* section Get all updates */
+.getAll-updates{
+  background-color: #213F72;
+  height: 40vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+/* Woring progress start */
+/* .Working-progress{
+  padding: 5rem 9rem 5rem 9rem ;
+} */
+.container_one {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f0f0f0;
+  padding: 20px;
+
+  border-radius: 10px;
+  margin-bottom: 5px;
+}
+.step:hover {
+  box-shadow: 5px 5px 10px rgb(73, 73, 73);
+  transition: all 0.5s ease-in-out;
+  
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+}
+
+.step-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+}
+
+.dashed-line {
+  width: 2px;
+  height: 50px;
+  background: linear-gradient(transparent 50%, #333 0%);
+  background-size: 5px 5px;
+}
+/* manager site comment  */
+.manager-site{
+  height: 100vh;
+  
+}
+.custom-stroke {
+  color: transparent;
+  -webkit-text-stroke: 2px #C6345F; /* Stroke width and color */
+  font-size: 6em;
+}
+.next-pre-icon {
+  border: 2px solid #C6345F;
+  width: 60px;
+  height: 60px;
+  color: #C6345F;
+  font-size: 30px;
+}
+.next-pre-icon:hover{
+  background-color: #C6345F;
+  color: white;
+  transition: all 0.3s ease-out;
+}
+.stars i{
+  font-size: 25px;
+  color: #C6345F;
+}
+.manager-name{
+  font-size: 30px;
+  color: #213F72;
+}
+.manager-image img{
+  width: 180px;
+  height: 180px ;
+  background-color: #C6345F;
+}
+/* footer Design */
+.text-orange {
+  color: #ff7f00; /* Adjust color to match the orange shade */
+}
+
+.btn-orange {
+  background-color: #ff7f00;
+  color: white;
+}
+.hero-page{
+  height: 90vh;
+}
+/* our service */
+/* .bg-image-service{
+  width: 30rem;
+  background-image: url('/static/images/about-us.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
+  
+} */
+
+/* recent-work */
+.recent-work{
+  background-color: black;
+  height: 60vh;
+}
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 5rem;
+}
+
+.circle {
+  background-color: rgba(75, 0, 0, 0.84); /* Opacity only for background */
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.circle:hover {
+  background-color: #C6345F;
+  transition: all 0.35s ease-out;
+}
+
+/*  carousel site*/
+
+
+/*  */
+/* Media query */
+@media screen and (max-width:768px){
+  .Plumbing-Installation {
+    margin-left: 0;
+    text-align: start;
+    justify-content: start;
+  }
+  .roof-repair {
+    margin-left: 0;
+    text-align: start;
+    justify-content: start;
+  }
+  .roof-repair p{
+    margin-left: 0;
+    text-align: start;
+   
+  }
+}
+

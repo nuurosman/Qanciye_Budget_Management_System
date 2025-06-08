@@ -1,0 +1,626 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container-lg mt-5">
+    <h1 class="mb-4">All Project Report</h1>
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-sm-6 col-md-3">
+            <div class="card card-stats card-round">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-icon">
+                            <div class="icon-big text-center icon-success bubble-shadow-small">
+                                <i class="bi bi-cash-stack fs-1 text-success"></i>
+                            </div>
+                        </div>
+                        <div class="col-7 col-stats">
+                            <div class="numbers">
+                                <p class="card-category">Total Expenses</p>
+                                <h4 class="card-title">{{ "\$%.2f"|format(expenses_data|sum(attribute='amount')) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card card-stats card-round">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-icon">
+                            <div class="icon-big text-center icon-primary bubble-shadow-small">
+                                <i class="bi bi-kanban fs-1 text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="col-7 col-stats">
+                            <div class="numbers">
+                                <p class="card-category">Projects Count</p>
+                                <h4 class="card-title">{{ projects|length }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card card-stats card-round">
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-icon">
+                            <div class="icon-big text-center icon-warning bubble-shadow-small">
+                                <i class="bi bi-graph-up-arrow fs-1 text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="col-7 col-stats">
+                            <div class="numbers">
+                                <p class="card-category">Average Expense</p>
+                                <h4 class="card-title">
+                                    {% if expenses_data %}
+                                    {{ "\$%.2f"|format(expenses_data|sum(attribute='amount')/expenses_data|length) }}
+                                    {% else %}
+                                    \$0.00
+                                    {% endif %}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card card-stats card-round">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-icon">
+                            <div class="icon-big text-center icon-info bubble-shadow-small">
+                                <i class="bi bi-calendar-range fs-1 text-info"></i>
+                            </div>
+                        </div>
+                        <div class="col-7 col-stats">
+                            <div class="numbers">
+                                <p class="card-category">Time Period</p>
+                                <h4 class="card-title">{{ period|title }}</h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="reportForm" method="GET" action="{{ url_for('financial_report') }}">
+                        <div class="row">
+                            <!-- Report Type Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Choose Report</label>
+                                <select class="form-select" name="report_type" id="reportType">
+                                    <option value="expense" {% if report_type=='expense' %}selected{% endif %}>Expenses
+                                    </option>
+                                    <option value="wages" {% if report_type=='wages' %}selected{% endif %}>Wages
+                                    </option>
+                                    <option value="material" {% if report_type=='material' %}selected{% endif %}>
+                                        Materials</option>
+                                    <option value="budget" {% if report_type=='budget' %}selected{% endif %}>Budget
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Project Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Project</label>
+                                <select class="form-select" name="project_id" id="projectSelect">
+                                    <option value="all" {% if not project_id or project_id=='all' %}selected{% endif %}>
+                                        All Projects</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.project_id }}" {% if project_id==project.project_id|string
+                                        %}selected{% endif %}>
+                                        {{ project.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Time Period Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Time Period</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="period" id="daily" value="daily" {% if
+                                        period=='daily' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary" for="daily">Daily</label>
+
+                                    <input type="radio" class="btn-check" name="period" id="weekly" value="weekly" {% if
+                                        period=='weekly' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary" for="weekly">Weekly</label>
+
+                                    <input type="radio" class="btn-check" name="period" id="monthly" value="monthly" {%
+                                        if period=='monthly' %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary" for="monthly">Monthly</label>
+                                </div>
+                            </div>
+
+                            <!-- Date Range Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Date Range</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="start_date" id="startDate"
+                                        value="{{ start_date|default('') }}">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" name="end_date" id="endDate"
+                                        value="{{ end_date|default('') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12 d-flex justify-content-end">
+                                <!-- Generate Report Button -->
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Generate Report
+                                </button>
+
+                                <!-- Print Button -->
+                                <button type="button" id="printReport" class="btn btn-secondary me-2"
+                                    title="Print Report">
+                                    <i class="bi bi-printer me-1"></i> Print
+                                </button>
+
+                                <!-- Export Dropdown -->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-success dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="Export options"
+                                        title="Export Report">
+                                        <i class="bi bi-download me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="#" id="exportPDF" role="button">
+                                                <i class="bi bi-file-earmark-pdf me-2"></i> PDF
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" id="exportExcel" role="button">
+                                                <i class="bi bi-file-earmark-excel me-2"></i> Excel
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" id="exportCSV" role="button">
+                                                <i class="bi bi-file-earmark-text me-2"></i> CSV
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        {% if selected_project %}
+                        {{ report_type|title }} Report for {{ selected_project.name }}
+                        {% else %}
+                        {{ report_type|title }} Report for All Projects
+                        {% endif %}
+                    </h4>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {{ start_date }} to {{ end_date }}
+                    </h6>
+
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table id="reportTable" class="table table-bordered table-hover">
+                            <thead class="sticky-top bg-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Details</th>
+                                    <th>Project</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in expenses_data %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ record.name or 'N/A' }}</td>
+                                    <td>{{ record.amount }}</td>
+                                    <td>{{ record.created_at.strftime('%m/%d/%Y') if record.created_at else 'N/A' }}
+                                    </td>
+                                    <td>{{ record.expense_type or 'N/A' }}</td>
+                                    <td>{{ record.project or 'N/A' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No records found for the selected criteria</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% if expenses_data %}
+                            <tfoot>
+                                <tr class="table-info">
+                                    <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                                    <td><strong>{{ expenses_data|sum(attribute='amount') }}</strong></td>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tfoot>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include necessary JS libraries -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize DataTable with export buttons
+        var table = $('#reportTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'print',
+                    title: '{{ report_type|title }} Report - {% if selected_project %}{{ selected_project.name }} - {% endif %}{{ start_date }} to {{ end_date }}',
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    customize: function (win) {
+                        $(win.document.body).find('h1').css('text-align', 'center');
+                        $(win.document.body).find('table').addClass('display').css('width', '100%');
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    title: '{{ report_type|title }} Report - {% if selected_project %}{{ selected_project.name }} - {% endif %}{{ start_date }} to {{ end_date }}',
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    title: '{{ report_type|title }} Report - {% if selected_project %}{{ selected_project.name }} - {% endif %}{{ start_date }} to {{ end_date }}',
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    title: '{{ report_type|title }} Report - {% if selected_project %}{{ selected_project.name }} - {% endif %}{{ start_date }} to {{ end_date }}',
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                }
+            ],
+            responsive: true,
+            scrollY: '500px',
+            scrollCollapse: true,
+            paging: false,
+            order: [[3, 'desc']], // Sort by date descending
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search records..."
+            },
+            initComplete: function () {
+                // Add search box
+                this.api().columns().every(function () {
+                    var column = this;
+                    var header = $(column.header());
+
+                    // Skip the first column (#)
+                    if (header.index() === 0) return;
+
+                    var input = $('<input type="text" class="form-control form-control-sm" placeholder="Search...">')
+                        .appendTo(header)
+                        .on('keyup change', function () {
+                            if (column.search() !== this.value) {
+                                column.search(this.value).draw();
+                            }
+                        });
+                });
+            }
+        });
+
+        // Set default dates if not already set
+        if (!$('#startDate').val()) {
+            var today = new Date();
+            $('#endDate').val(today.toISOString().split('T')[0]);
+
+            var startDate = new Date();
+            startDate.setDate(today.getDate() - 7);
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+        }
+
+        // Handle period change to adjust date range
+        $('input[name="period"]').change(function () {
+            var period = $(this).val();
+            var endDate = new Date();
+            var startDate = new Date();
+
+            switch (period) {
+                case 'daily':
+                    startDate = endDate;
+                    break;
+                case 'weekly':
+                    startDate.setDate(endDate.getDate() - 7);
+                    break;
+                case 'monthly':
+                    startDate.setMonth(endDate.getMonth() - 1);
+                    break;
+            }
+
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+            $('#endDate').val(endDate.toISOString().split('T')[0]);
+
+            // Submit the form automatically when period changes
+            $('#reportForm').submit();
+        });
+
+        // Handle print button
+        $('#printReport').click(function () {
+            table.button('.buttons-print').trigger();
+        });
+
+        // Handle export buttons
+        $('#exportPDF').click(function () {
+            table.button('.buttons-pdf').trigger();
+        });
+
+        $('#exportExcel').click(function () {
+            table.button('.buttons-excel').trigger();
+        });
+
+        $('#exportCSV').click(function () {
+            table.button('.buttons-csv').trigger();
+        });
+    });
+
+
+
+    $(document).ready(function () {
+        // Initialize DataTable with export buttons
+        var table = $('#reportTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'print',
+                    title: function () {
+                        return getReportTitle();
+                    },
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible',
+                        stripHtml: false
+                    },
+                    customize: function (win) {
+                        $(win.document.body).prepend(
+                            '<h1>' + getReportTitle() + '</h1>' +
+                            '<p>Generated on: ' + new Date().toLocaleString() + '</p>'
+                        );
+
+                        $(win.document.body).find('table')
+                            .addClass('compact')
+                            .css('font-size', 'inherit')
+                            .css('width', '100%');
+
+                        // Remove DataTable styling classes
+                        $(win.document.body).find('table').removeClass('dataTable');
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    title: function () {
+                        return getReportTitle();
+                    },
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    customize: function (doc) {
+                        doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
+                        doc.defaultStyle.fontSize = 8;
+                        doc.styles.tableHeader.fontSize = 9;
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    title: function () {
+                        return getReportTitle();
+                    },
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    title: function () {
+                        return getReportTitle();
+                    },
+                    className: 'btn-sm',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                }
+            ],
+            responsive: true,
+            scrollY: '500px',
+            scrollCollapse: true,
+            paging: false,
+            order: [[3, 'desc']], // Sort by date descending
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search records..."
+            }
+        });
+
+        // Function to generate consistent report title
+        function getReportTitle() {
+            var reportType = $('#reportType option:selected').text();
+            var projectName = $('#projectSelect option:selected').text();
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            return reportType + ' Report' +
+                (projectName !== 'All Projects' ? ' - ' + projectName : '') +
+                ' - ' + startDate + ' to ' + endDate;
+        }
+
+        // Set default dates if not already set
+        if (!$('#startDate').val()) {
+            var today = new Date();
+            $('#endDate').val(today.toISOString().split('T')[0]);
+
+            var startDate = new Date();
+            startDate.setDate(today.getDate() - 7);
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+        }
+
+        // Handle period change to adjust date range
+        $('input[name="period"]').change(function () {
+            var period = $(this).val();
+            var endDate = new Date();
+            var startDate = new Date();
+
+            switch (period) {
+                case 'daily':
+                    startDate = endDate;
+                    break;
+                case 'weekly':
+                    startDate.setDate(endDate.getDate() - 7);
+                    break;
+                case 'monthly':
+                    startDate.setMonth(endDate.getMonth() - 1);
+                    break;
+            }
+
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+            $('#endDate').val(endDate.toISOString().split('T')[0]);
+
+            // Submit the form automatically when period changes
+            $('#reportForm').submit();
+        });
+
+        // Handle print button - use DataTable's print button
+        $('#printReport').on('click', function () {
+            table.button('0').trigger();
+        });
+
+        // Handle export buttons - use DataTable's export buttons
+        $('#exportPDF').on('click', function (e) {
+            e.preventDefault();
+            table.button('1').trigger();
+        });
+
+        $('#exportExcel').on('click', function (e) {
+            e.preventDefault();
+            table.button('2').trigger();
+        });
+
+        $('#exportCSV').on('click', function (e) {
+            e.preventDefault();
+            table.button('3').trigger();
+        });
+    });
+</script>
+
+
+<style>
+    .card {
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .header-title {
+        font-weight: 600;
+    }
+
+    .btn-group .btn {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        margin-left: 0.5em;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+    }
+
+    .sticky-top {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .table-info {
+        background-color: #d1ecf1;
+    }
+
+    /* Your existing styles... */
+
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .card,
+        .card * {
+            visibility: visible;
+        }
+
+        .card {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            border: none;
+            box-shadow: none;
+        }
+
+        .no-print,
+        .dataTables_info,
+        .dataTables_length,
+        .dataTables_filter {
+            display: none !important;
+        }
+
+        table {
+            width: 100% !important;
+            font-size: 11pt !important;
+        }
+
+        th,
+        td {
+            padding: 4px !important;
+        }
+    }
+</style>
+{% endblock %}

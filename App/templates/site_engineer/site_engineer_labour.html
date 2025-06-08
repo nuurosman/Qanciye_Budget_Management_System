@@ -1,0 +1,67 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+<div class="container-lg mt-5">
+  <div class="row mx-2 ">
+    <h1>Projects Assigned Labour page</h1>
+
+    {% for labour in assigned_labour %}
+    <div class="col-md-4 ">
+      <div class="card shadow-md mb-4">
+        <div class="card-body ">
+          
+          <div class="row align-items-center mb-4">
+            <div class="col-2">
+              <div class="shadow-lg bg-primary bg-sm text-center py-1 rounded" style="width: 40px; height: 40px;">
+                <i class="bi bi-diagram-3 text-white fs-3"></i>
+              </div>
+            </div>
+            <div class="col">
+              <h5 class="card-title">{{ labour.full_name }}</h5>
+            </div>
+          </div>
+          
+          <h6 class="card-subtitle mb-2 text-muted">Type of work: {{ labour.type_of_work }}</h6>
+          <p class="card-text">
+            <strong>Project: </strong> {{ labour.project_name  }}<br>
+            <strong>Project ID: </strong> {{ labour.project_id }}<br>
+          </p>
+          
+          <!-- Changed the button target to use labour.labour_id instead of project.project_id -->
+          <button class="btn btn-outline-primary" type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#labourDetails{{ labour.labour_id }}" 
+                  aria-expanded="false" 
+                  aria-controls="labourDetails{{ labour.labour_id }}">
+            More Detail
+          </button>
+          
+          <!-- Changed the collapse div to use labour.labour_id and show labour details -->
+          <div class="collapse mt-3" id="labourDetails{{ labour.labour_id }}">
+            <div class="card card-body">
+              <p><strong>Labour ID:</strong> {{ labour.labour_id }}</p>
+              <p><strong>Email:</strong> {{ labour.email }}</p>
+              <p><strong>Type of Work:</strong> {{ labour.type_of_work }}</p>
+              <p><strong>Assigned Project:</strong> {{ labour.name }} (ID: {{ labour.project_id }})</p>
+              <p><strong>Assigned Date:</strong> {{ labour.created_at }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-md-4 ">
+      <div class="card shadow-md mb-4">
+        <div class="card-body ">
+          <h5 class="card-title">
+            <i class="bi bi-slash-circle text-white fs-2 shadow-lg bg-danger bg-sm text-center py-1 px-2 rounded"></i>
+            No labours assigned yet!
+          </h5>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

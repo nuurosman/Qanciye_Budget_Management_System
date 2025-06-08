@@ -1,0 +1,234 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+
+<!-- signin form start -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+
+        <div class="col-md-12">
+            <!-- Table Data start-->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this labour?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- User Table -->
+
+
+            <div class="container-fluid">
+                <!-- Model Button -->
+                <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal"
+                    data-bs-target="#registrationModal">Add User</button>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="jobTable" class="table table-bordered table-hover display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Created At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if users %}
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user[0] }}</td> <!-- User ID -->
+                                        <td>{{ user[1] }}</td> <!-- Full Name -->
+                                        <td>{{ user[2] }}</td> <!-- Email -->
+                                        <td>{{ user[4] }}</td> <!-- Created At -->
+                                        <td>
+                                            <!-- Edit Button with data attributes -->
+                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                                data-bs-target="#updateModal" data-id="{{ user[0] }}"
+                                                data-name="{{ user[1] }}" data-pass="{{ user[3] }}"
+                                                data-email="{{ user[2] }}">
+                                                <i class="bi bi-pencil-square text-white"></i>
+                                            </button>
+                                            <form class="delete-form"
+                                                action="{{ url_for('delete_admin', admin_id=user[0]) }}" method="POST"
+                                                style="display:inline;">
+                                                <button type="button" class="btn btn-sm btn-danger delete-button"
+                                                    data-admin-id="{{ user[0] }}">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No users found</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Table Data end-->
+
+            <!-- Registration modal start -->
+            <div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="registrationModalLabel">User Registration</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="registrationForm" method="POST" action="/register">
+                                <!-- Common Fields -->
+                                <div class="mb-3">
+                                    <label for="reg_full_name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="reg_full_name" name="full_name"
+                                        placeholder="Enter full name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="reg_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="reg_email" name="email"
+                                        placeholder="Enter email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="reg_password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="reg_password" name="password"
+                                        placeholder="Enter password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="user_type" class="form-label">User Type</label>
+                                    <select class="form-select" id="user_type" name="user_type"
+                                        onchange="toggleFields()" required>
+                                        <option value="" disabled selected>Select user type</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="site_engineer">Site Engineer</option>
+                                        <option value="labour">Labour</option>
+                                    </select>
+                                </div>
+
+                                <!-- Fields for Labour -->
+                                <div id="labour_fields" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="type_of_work" class="form-label">Type of Work</label>
+                                        <input type="text" class="form-control" id="type_of_work" name="type_of_work"
+                                            placeholder="Enter type of work (e.g., Carpenter)">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">Register</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Modal -->
+            <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateModalLabel">Admin Update</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ url_for('update_admin') }}" method="post">
+                                <input type="hidden" id="update_user_id" name="user_id">
+                                <!-- Hidden input for user ID -->
+                                <div class="mb-3">
+                                    <label for="update_full_name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="update_full_name" name="full_name"
+                                        placeholder="Enter full name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="update_email" name="email"
+                                        placeholder="Enter email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="update_password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="update_password" name="password"
+                                        placeholder="Enter password">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const updateModal = document.getElementById('updateModal');
+
+                    updateModal.addEventListener('show.bs.modal', (event) => {
+                        const button = event.relatedTarget;
+
+                        if (button) {
+                            // Extract info from data attributes
+                            const userId = button.getAttribute('data-id');
+                            const userName = button.getAttribute('data-name');
+                            const userEmail = button.getAttribute('data-email');
+
+                            // Populate the modal inputs with the correct data
+                            document.querySelector('#update_user_id').value = userId;
+                            document.querySelector('#update_full_name').value = userName;
+                            document.querySelector('#update_email').value = userEmail;
+
+                            // Leave the password field empty for security
+                            document.querySelector('#update_password').value = '';
+                        }
+                    });
+                });
+                document.addEventListener("DOMContentLoaded", function () {
+                    let selectedForm = null;
+
+                    // Attach event listeners to each delete button
+                    document.querySelectorAll(".delete-button").forEach(button => {
+                        button.addEventListener("click", function () {
+                            selectedForm = this.closest(".delete-form"); // Get the form of the clicked button
+                            let deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+                            deleteModal.show(); // Show Bootstrap Modal
+                        });
+                    });
+
+                    // If "Yes, Delete" is clicked, submit the selected form
+                    document.getElementById("confirmDelete").addEventListener("click", function () {
+                        if (selectedForm) {
+                            selectedForm.submit();
+                        }
+                    });
+                });
+            </script>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

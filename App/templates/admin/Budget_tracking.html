@@ -1,0 +1,349 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<!-- Budget Tracking Management -->
+<div class="container-lg mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this budget transaction?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirmDelete" type="button" class="btn btn-danger">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                <!-- Add Transaction Button -->
+                <button type="button" class="btn btn-primary mt-3 mb-3 btn-md btn-round" data-bs-toggle="modal"
+                    data-bs-target="#transactionModal">
+                    Add Budget Transaction
+                </button>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="transactionTable" class="table table-bordered table-hover display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Transaction ID</th>
+                                        <th>Project</th>
+                                        <th>Type</th>
+                                        <th>Reference ID</th>
+                                        <th>Amount</th>
+                                        <th>Balance</th>
+                                        <th>Remarks</th>
+                                        <th>Date</th>
+                                        <th>Registered By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td>{{ transaction.transaction_id }}</td>
+                                        <td>{{ transaction.project_name }}</td>
+                                        <td>{{ transaction.transaction_type|replace('_', ' ')|title }}</td>
+                                        <td>{{ transaction.reference_id }}</td>
+                                        <td>{{ "%.2f"|format(transaction.amount) }}</td>
+                                        <td>{{ "%.2f"|format(transaction.balance) }}</td>
+                                        <td>{{ transaction.remarks }}</td>
+                                        <td>{{ transaction.transaction_date.strftime('%Y-%m-%d') if transaction.transaction_date else '' }}</td>
+                                        <td>{{ transaction.admin_name or 'System' }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-warning edit-transaction" 
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#updateTransactionModal"
+                                                    data-transaction-id="{{ transaction.transaction_id }}"
+                                                    data-project-id="{{ transaction.project_id }}"
+                                                    data-transaction-type="{{ transaction.transaction_type }}"
+                                                    data-reference-id="{{ transaction.reference_id }}"
+                                                    data-amount="{{ transaction.amount }}"
+                                                    data-remarks="{{ transaction.remarks }}">
+                                                    <i class="bi bi-pencil-square text-white"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger delete-transaction"
+                                                        data-transaction-id="{{ transaction.transaction_id }}">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Registration Modal -->
+            <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="transactionModalLabel">Register Budget Transaction</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="transactionForm" method="post">
+                                <div class="mb-3">
+                                    <label for="project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="project_id" name="project_id" required>
+                                        <option value="" disabled selected>Select project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="transaction_type" class="form-label">Transaction Type</label>
+                                    <select class="form-select" id="transaction_type" name="transaction_type" required>
+                                        <option value="" disabled selected>Select transaction type</option>
+                                        <option value="payment_wage">Payment Wage</option>
+                                        <option value="material_purchase">Material Purchase</option>
+                                        <option value="expense_payment">Expense Payment</option>
+                                        <option value="project_funding">Project Funding</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_id" class="form-label">Reference ID</label>
+                                    <input type="number" class="form-control" id="reference_id" name="reference_id" min="0" required>
+                                    <small class="text-muted">Wage ID, Material ID, or Expense ID depending on type</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="remarks" class="form-label">Remarks</label>
+                                    <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                                </div>
+
+                                <input type="hidden" id="admin_id" name="admin_id" value="{{ admin_id }}">
+
+                                <button type="submit" class="btn btn-primary w-100">Submit Transaction</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Update Modal -->
+            <div class="modal fade" id="updateTransactionModal" tabindex="-1" aria-labelledby="updateTransactionModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateTransactionModalLabel">Edit Budget Transaction</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="updateTransactionForm" method="POST">
+                                <input type="hidden" id="transaction_id" name="transaction_id">
+                                <div class="mb-3">
+                                    <label for="update_project_id" class="form-label">Project</label>
+                                    <select class="form-select" id="update_project_id" name="project_id" required>
+                                        <option value="" disabled>Select project</option>
+                                        {% for project in projects %}
+                                        <option value="{{ project.project_id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="update_transaction_type" class="form-label">Transaction Type</label>
+                                    <select class="form-select" id="update_transaction_type" name="transaction_type" required>
+                                        <option value="" disabled>Select transaction type</option>
+                                        <option value="payment_wage">Payment Wage</option>
+                                        <option value="material_purchase">Material Purchase</option>
+                                        <option value="expense_payment">Expense Payment</option>
+                                        <option value="project_funding">Project Funding</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="update_reference_id" class="form-label">Reference ID</label>
+                                    <input type="number" class="form-control" id="update_reference_id" name="reference_id" min="0" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="update_amount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="update_amount" name="amount" step="0.01" min="0" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="update_remarks" class="form-label">Remarks</label>
+                                    <textarea class="form-control" id="update_remarks" name="remarks" rows="3"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">Update Transaction</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const transactionForm = document.getElementById("transactionForm");
+    const updateTransactionForm = document.getElementById("updateTransactionForm");
+    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    let currentDeleteId = null;
+
+    // Handle transaction form submission
+    transactionForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = transactionForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+        const formData = new FormData(transactionForm);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch("/admin/register_budget_transaction", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                alert("Transaction recorded successfully!");
+                window.location.reload();
+            } else {
+                alert(result.message || "Failed to record transaction. Please check the details and try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to record transaction. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Transaction';
+        }
+    });
+
+    // Handle edit buttons
+    document.querySelectorAll(".edit-transaction").forEach(button => {
+        button.addEventListener("click", function() {
+            const transactionId = this.getAttribute("data-transaction-id");
+            const projectId = this.getAttribute("data-project-id");
+            const transactionType = this.getAttribute("data-transaction-type");
+            const referenceId = this.getAttribute("data-reference-id");
+            const amount = this.getAttribute("data-amount");
+            const remarks = this.getAttribute("data-remarks");
+            
+            document.getElementById("transaction_id").value = transactionId;
+            document.getElementById("update_project_id").value = projectId;
+            document.getElementById("update_transaction_type").value = transactionType;
+            document.getElementById("update_reference_id").value = referenceId;
+            document.getElementById("update_amount").value = amount;
+            document.getElementById("update_remarks").value = remarks;
+
+            const modal = new bootstrap.Modal(document.getElementById("updateTransactionModal"));
+            modal.show();
+        });
+    });
+
+    // Handle update form submission
+    updateTransactionForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = updateTransactionForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+
+        const formData = new FormData(updateTransactionForm);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch("/admin/update_budget_transaction", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to update transaction. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Update Transaction';
+        }
+    });
+
+    // Handle delete buttons
+    document.querySelectorAll(".delete-transaction").forEach(button => {
+        button.addEventListener("click", function() {
+            currentDeleteId = this.getAttribute("data-transaction-id");
+            deleteModal.show();
+        });
+    });
+
+    // Confirm delete
+    document.getElementById("confirmDelete").addEventListener("click", async function() {
+        if (!currentDeleteId) return;
+
+        const deleteBtn = this;
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+
+        try {
+            const response = await fetch(`/admin/delete_budget_transaction/${currentDeleteId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to delete transaction. Please try again.");
+        } finally {
+            deleteModal.hide();
+            currentDeleteId = null;
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = 'Yes, Delete';
+        }
+    });
+});
+</script>
+
+{% endblock %}

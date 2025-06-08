@@ -1,0 +1,258 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="page-inner">
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+      <div>
+        <h3 class="fw-bold mb-3">Labour Dashboard</h3>
+      </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row row-card-no-pd">
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-primary bubble-shadow-small">
+                  <i class="bi bi-briefcase-fill text-warning"></i> 
+                </div>
+              </div>
+              <div class="col-7 col-stats">
+                <div class="numbers">
+                  <p class="card-category">Assigned Projects</p>
+                  <h4 class="card-title">{{ total_projects_count }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-warning bubble-shadow-small">
+                  <i class="bi bi-currency-dollar"></i>
+                </div>
+              </div>
+              <div class="col-7 col-stats">
+                <div class="numbers">
+                  <p class="card-category">Total Wages</p>
+                  <h4 class="card-title">${{ "{:,.2f}".format(total_wages) }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-success bubble-shadow-small">
+                  <i class="bi bi-person-check-fill"></i> 
+                </div>
+              </div>
+              <div class="col-7 col-stats">
+                <div class="numbers">
+                  <p class="card-category">Days Present</p>
+                  <h4 class="card-title">{{ total_present }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-danger bubble-shadow-small">
+                  <i class="bi bi-person-x-fill"></i>
+                </div>
+              </div>
+              <div class="col-7 col-stats">
+                <div class="numbers">
+                  <p class="card-category">Days Absent</p>
+                  <h4 class="card-title">{{ total_absent }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <form method="GET" action="{{ url_for('labour_dashboard') }}">
+              <div class="row  align-items-center">
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">Select Project</label>
+                  <select class="form-select" name="project_id">
+                    <option value="">All Projects</option>
+                    {% for project in projects %}
+                    <option value="{{ project.project_id }}" 
+                      {% if selected_project|string == project.project_id|string %}selected{% endif %}>
+                      {{ project.name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">View Type</label>
+                  <select class="form-select" name="view_type">
+                    <option value="attendance" {% if view_type == 'attendance' %}selected{% endif %}>Attendance</option>
+                    <option value="wages" {% if view_type == 'wages' %}selected{% endif %}>Wages</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end mt-3 py-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-arrow-clockwise"></i> <strong>Refresh</strong>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Display Section -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">
+              {% if selected_project %}
+                {{ view_type|title }} Report for {{ selected_project.name }}
+              {% else %}
+                {{ view_type|title }} Report for All Projects
+              {% endif %}
+            </h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: scroll;">
+              {% if view_type == 'attendance' %}
+                <!-- Attendance Table -->
+                <table class="table table-bordered table-hover ">
+                  <thead class="sticky-top bg-light">
+                    <tr>
+                      <th>Project</th>
+                      <th>Present Days</th>
+                      <th>Absent Days</th>
+                      <th>Attendance Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in attendance_data %}
+                    <tr>
+                      <td>{{ item.project_name }}</td>
+                      <td>{{ item.present_days }}</td>
+                      <td>{{ item.absent_days }}</td>
+                      <td>
+                        {% set total = item.present_days + item.absent_days %}
+                        {% if total > 0 %}
+                          {{ ((item.present_days / total) * 100)|round(1) }}%
+                        {% else %}
+                          N/A
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  {% if attendance_data %}
+                  <tfoot>
+                    <tr class="table-info">
+                      <td><strong>Total</strong></td>
+                      <td><strong>{{ total_present }}</strong></td>
+                      <td><strong>{{ total_absent }}</strong></td>
+                      <td>
+                        {% set grand_total = total_present + total_absent %}
+                        {% if grand_total > 0 %}
+                          <strong>{{ ((total_present / grand_total) * 100)|round(1) }}%</strong>
+                        {% else %}
+                          <strong>N/A</strong>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tfoot>
+                  {% endif %}
+                </table>
+              {% else %}
+                <!-- Wages Table -->
+                <table class="table table-bordered table-hover">
+                  <thead class="sticky-top bg-light">
+                    <tr>
+                      <th>Project</th>
+                      <th>Daily Rate</th>
+                      <th>Days Worked</th>
+                      <th>Total Wage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in wage_data %}
+                    <tr>
+                      <td>{{ item.project_name }}</td>
+                      <td>${{ "%.2f"|format(item.daily_rate) }}</td>
+                      <td>{{ item.total_days }}</td>
+                      <td>${{ "%.2f"|format(item.total_wage) }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  {% if wage_data %}
+                  <tfoot>
+                    <tr class="table-info">
+                      <td><strong>Total</strong></td>
+                      <td></td>
+                      <td><strong>{{ wage_data|sum(attribute='total_days') }}</strong></td>
+                      <td><strong>${{ "%.2f"|format(wage_data|sum(attribute='total_wage')) }}</strong></td>
+                    </tr>
+                  </tfoot>
+                  {% endif %}
+                </table>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .table-info {
+    background-color: #d1ecf1;
+  }
+
+  .table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}

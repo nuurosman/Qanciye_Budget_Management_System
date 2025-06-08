@@ -1,0 +1,31 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+{% if user %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">Edit User</div>
+                <div class="card-body">
+                    <form method="POST" action="/edit/{{ user['id'] }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user['username'] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="admin" {% if user['role'] == 'admin' %}selected{% endif %}>Admin</option>
+                                <option value="site_engineer" {% if user['role'] == 'site_engineer' %}selected{% endif %}>Site Engineer</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
