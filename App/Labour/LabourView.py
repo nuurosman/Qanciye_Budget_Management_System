@@ -1,12 +1,11 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, flash,url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, flash, url_for
 from App.Labour.LabourModal import get_labour_model 
 from App import app
 from decimal import Decimal
-import traceback
 from App.configuration import LabourDbConnetion
-import base64
 from datetime import datetime, timedelta
-
+import base64
+import traceback
 
 # Initialize the user model
 status, user_model_db = get_labour_model()
@@ -14,6 +13,11 @@ if not status:
     print(f"Error initializing user model: {user_model_db}")
     raise Exception("Failed to initialize user model.")
 usermodel = user_model_db
+
+def allowed_file(filename):
+    """Check if the file has an allowed extension"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 # Register a custom Jinja2 filter for base64 encoding
 @app.route('/labour/dashboard')
@@ -113,6 +117,7 @@ def labour_logout():
     session.clear()
     flash("You have been logged out.", "success")
     return redirect('/login')
+
 @app.context_processor
 def inject_profile_data():
     """Make profile data available to all templates for navbar avatar."""
@@ -244,209 +249,148 @@ def labour_profile():
 def labour_update_profile_image():
     user = session.get('user')
     if not user or user.get('user_type') != 'labour':
-        flash("Unauthorized access. Please log in as a labour.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Unauthorized access. Please log in as a labour."}), 401
 
     labour_id = session.get('labour_id')
     if not labour_id:
-        flash("Session expired. Please log in again.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Session expired. Please log in again."}), 401
 
     if 'profile_image' not in request.files:
-        flash("No file selected.", "danger")
-        return redirect(url_for('labour_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     file = request.files['profile_image']
     if file.filename == '':
-        flash("No file selected.", "danger")
-        return redirect(url_for('labour_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     if not allowed_file(file.filename):
-        flash("Allowed image types are: png, jpg, jpeg, gif", "danger")
-        return redirect(url_for('labour_profile'))
+        return jsonify({"success": False, "message": "Allowed image types are: png, jpg, jpeg, gif"}), 400
 
     max_size = 2 * 1024 * 1024  # 2MB
     file.seek(0, 2)
     file_size = file.tell()
     file.seek(0)
     if file_size > max_size:
-        flash("Image size must be less than 2MB", "danger")
-        return redirect(url_for('labour_profile'))
+        return jsonify({"success": False, "message": "Image size must be less than 2MB"}), 400
 
     if file:
         try:
             file_data = file.read()
             success, model = get_labour_model()
             if not success:
-                flash("Database connection failed.", "danger")
-                return redirect(url_for('labour_profile'))
+                return jsonify({"success": False, "message": "Database connection failed."}), 500
 
             update_success, message = model.update_labour_profile_picture(
                 labour_id, file_data, file.filename
             )
 
             if update_success:
-                flash("Profile image updated successfully.", "success")
+                return jsonify({"success": True, "message": "Profile image updated successfully."}), 200
             else:
-                flash(f"Failed to update profile image: {message}", "danger")
+                return jsonify({"success": False, "message": f"Failed to update profile image: {message}"}), 400
 
         except Exception as e:
             print(f"Error updating profile image: {e}")
-            flash("An error occurred while updating the profile image.", "danger")
+            return jsonify({"success": False, "message": "An error occurred while updating the profile image."}), 500
 
-    return redirect(url_for('labour_profile'))
+    return jsonify({"success": False, "message": "Unknown error."}), 500
 
 @app.route('/site_engineer/update_profile_image', methods=['POST'])
 def site_engineer_update_profile_image_local():
     user = session.get('user')
     if not user or user.get('user_type') != 'site_engineer':
-        flash("Unauthorized access. Please log in as a site engineer.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Unauthorized access. Please log in as a site engineer."}), 401
 
     site_engineer_id = session.get('site_engineer_id')
     if not site_engineer_id:
-        flash("Session expired. Please log in again.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Session expired. Please log in again."}), 401
 
     if 'profile_image' not in request.files:
-        flash("No file selected.", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     file = request.files['profile_image']
     if file.filename == '':
-        flash("No file selected.", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     if not allowed_file(file.filename):
-        flash("Allowed image types are: png, jpg, jpeg, gif", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "Allowed image types are: png, jpg, jpeg, gif"}), 400
 
     max_size = 2 * 1024 * 1024  # 2MB
     file.seek(0, 2)
     file_size = file.tell()
     file.seek(0)
     if file_size > max_size:
-        flash("Image size must be less than 2MB", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "Image size must be less than 2MB"}), 400
 
     if file:
         try:
             file_data = file.read()
             success, model = get_labour_model()
             if not success:
-                flash("Database connection failed.", "danger")
-                return redirect(url_for('site_engineer_profile'))
+                return jsonify({"success": False, "message": "Database connection failed."}), 500
 
             update_success, message = model.update_site_engineer_profile_picture(
                 site_engineer_id, file_data, file.filename
             )
 
             if update_success:
-                flash("Profile image updated successfully.", "success")
+                return jsonify({"success": True, "message": "Profile image updated successfully."}), 200
             else:
-                flash(f"Failed to update profile image: {message}", "danger")
+                return jsonify({"success": False, "message": f"Failed to update profile image: {message}"}), 400
 
         except Exception as e:
             print(f"Error updating profile image: {e}")
-            flash("An error occurred while updating the profile image.", "danger")
+            return jsonify({"success": False, "message": "An error occurred while updating the profile image."}), 500
 
-    return redirect(url_for('site_engineer_profile'))
+    return jsonify({"success": False, "message": "Unknown error."}), 500
 
-def allowed_file(filename):
-    """Check if the file has an allowed extension"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
-
-
-@app.route('/admin/profile')
-def admin_profile():
-    user = session.get('user')
-    if not user or user.get('user_type') != 'admin':
-        flash("Unauthorized access. Please log in.", "danger")
-        return redirect('/login')
-
-    admin_id = session.get('admin_id')
-    if not admin_id:
-        flash("Session expired. Please log in again.", "danger")
-        return redirect('/login')
-
-    success, model = get_labour_model()
-    if not success:
-        flash("Database connection failed.", "danger")
-        return redirect('/login')
-
-    try:
-        profile_data = model.get_admin_profile(admin_id)
-        profile_picture = None
-        if profile_data and profile_data.get('profile_picture'):
-            profile_picture = base64.b64encode(profile_data['profile_picture']).decode('utf-8')
-        return render_template(
-            'Admin/admin_profile.html',
-            user_name=user.get('full_name', 'Admin'),
-            email=user.get('email', ''),
-            profile_picture=profile_picture
-        )
-    except Exception as e:
-        print(f"Error loading admin profile: {e}")
-        flash("An error occurred while loading the profile.", "danger")
-        return redirect('/login')
-    
-# Admin profile photo
 @app.route('/admin/update_profile_image', methods=['POST'])
 def admin_update_profile_image():
     user = session.get('user')
     if not user or user.get('user_type') != 'admin':
-        flash("Unauthorized access. Please log in as an admin.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Unauthorized access. Please log in as an admin."}), 401
 
     admin_id = session.get('admin_id')
     if not admin_id:
-        flash("Session expired. Please log in again.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Session expired. Please log in again."}), 401
 
     if 'profile_image' not in request.files:
-        flash("No file selected.", "danger")
-        return redirect(url_for('admin_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     file = request.files['profile_image']
     if file.filename == '':
-        flash("No file selected.", "danger")
-        return redirect(url_for('admin_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     if not allowed_file(file.filename):
-        flash("Allowed image types are: png, jpg, jpeg, gif", "danger")
-        return redirect(url_for('admin_profile'))
+        return jsonify({"success": False, "message": "Allowed image types are: png, jpg, jpeg, gif"}), 400
 
     max_size = 2 * 1024 * 1024  # 2MB
     file.seek(0, 2)
     file_size = file.tell()
     file.seek(0)
     if file_size > max_size:
-        flash("Image size must be less than 2MB", "danger")
-        return redirect(url_for('admin_profile'))
+        return jsonify({"success": False, "message": "Image size must be less than 2MB"}), 400
 
     if file:
         try:
             file_data = file.read()
             success, model = get_labour_model()
             if not success:
-                flash("Database connection failed.", "danger")
-                return redirect(url_for('admin_profile'))
+                return jsonify({"success": False, "message": "Database connection failed."}), 500
 
             update_success, message = model.update_admin_profile_picture(
                 admin_id, file_data, file.filename
             )
 
             if update_success:
-                flash("Profile image updated successfully.", "success")
+                return jsonify({"success": True, "message": "Profile image updated successfully."}), 200
             else:
-                flash(f"Failed to update profile image: {message}", "danger")
+                return jsonify({"success": False, "message": f"Failed to update profile image: {message}"}), 400
 
         except Exception as e:
             print(f"Error updating profile image: {e}")
-            flash("An error occurred while updating the profile image.", "danger")
+            return jsonify({"success": False, "message": "An error occurred while updating the profile image."}), 500
 
-    return redirect(url_for('admin_profile'))
+    return jsonify({"success": False, "message": "Unknown error."}), 500
 
 # Secret key
 app.secret_key = 'your_secret_key_here'
