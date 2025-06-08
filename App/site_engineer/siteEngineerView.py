@@ -945,71 +945,52 @@ def site_engineer_profile():
     
 @app.route('/site_engineer/update_profile_image', methods=['POST'])
 def site_engineer_update_profile_image():
-    # Validate user session and permissions
     user = session.get('user')
     if not user or user.get('user_type') != 'site_engineer':
-        flash("Unauthorized access. Please log in as a site engineer.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Unauthorized access. Please log in as a site engineer."}), 401
 
     site_engineer_id = session.get('site_engineer_id')
     if not site_engineer_id:
-        flash("Session expired. Please log in again.", "danger")
-        return redirect('/login')
+        return jsonify({"success": False, "message": "Session expired. Please log in again."}), 401
 
-    # Check if file was uploaded
     if 'profile_image' not in request.files:
-        flash("No file selected.", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
     file = request.files['profile_image']
-    
-    # Validate file name
     if file.filename == '':
-        flash("No file selected.", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "No file selected."}), 400
 
-    # Validate file type
     if not allowed_file(file.filename):
-        flash("Allowed image types are: png, jpg, jpeg, gif", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "Allowed image types are: png, jpg, jpeg, gif"}), 400
 
-    # Validate file size (max 2MB)
     max_size = 2 * 1024 * 1024  # 2MB
-    file.seek(0, 2)  # Seek to end to get size
+    file.seek(0, 2)
     file_size = file.tell()
-    file.seek(0)  # Reset file pointer
-    
+    file.seek(0)
     if file_size > max_size:
-        flash("Image size must be less than 2MB", "danger")
-        return redirect(url_for('site_engineer_profile'))
+        return jsonify({"success": False, "message": "Image size must be less than 2MB"}), 400
 
-    # Process the file
     if file:
         try:
-            # Read the file data
             file_data = file.read()
-            
-            # Get the model
             success, model = get_user_model()
             if not success:
-                flash("Database connection failed.", "danger")
-                return redirect(url_for('site_engineer_profile'))
+                return jsonify({"success": False, "message": "Database connection failed."}), 500
 
-            # Update the profile picture
             update_success, message = model.update_site_engineer_profile_picture(
                 site_engineer_id, file_data, file.filename
             )
 
             if update_success:
-                flash("Profile image updated successfully.", "success")
+                return jsonify({"success": True, "message": "Profile image updated successfully."}), 200
             else:
-                flash(f"Failed to update profile image: {message}", "danger")
+                return jsonify({"success": False, "message": f"Failed to update profile image: {message}"}), 400
 
         except Exception as e:
             print(f"Error updating profile image: {e}")
-            flash("An error occurred while updating the profile image.", "danger")
+            return jsonify({"success": False, "message": "An error occurred while updating the profile image."}), 500
 
-    return redirect(url_for('site_engineer_profile'))
+    return jsonify({"success": False, "message": "Unknown error."}), 500
 
 
 def allowed_file(filename):

@@ -17,6 +17,7 @@
   <!-- External Fonts and Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+ 
 
   <!-- Web Font Loader -->
   <script src="{{ url_for('static', filename='js/plugin/webfont/webfont.min.js') }}"></script>
@@ -575,103 +576,139 @@
                 </ul>
               </li>
 
-              <li class="nav-item topbar-user dropdown hidden-caret">
-                <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                  <div class="avatar-sm">
-                    {% if global_profile and global_profile.picture %}
+           <li class="nav-item topbar-user dropdown hidden-caret">
+    <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+        <div class="avatar-sm">
+            {% if global_profile and global_profile.picture %}
+                <img src="data:image/{{ global_profile.filename }};base64,{{ global_profile.picture }}" 
+                     alt="Profile Image" 
+                     class="avatar-img rounded-circle" 
+                     style="width: 40px; height: 40px; object-fit: cover;" id="navbarProfileImage">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/1.png') }}" 
+                     alt="Default Profile" 
+                     class="avatar-img rounded-circle" 
+                     style="width: 40px; height: 40px; object-fit: cover;" id="navbarProfileImage">
+            {% endif %}
+        </div>
+        <span class="profile-username">
+            <span class="op-7">Hi,</span>
+            <span class="fw-bold">{{ user_name }}</span>
+        </span>
+    </a>
+    <ul class="dropdown-menu dropdown-user animated fadeIn">
+        <div class="dropdown-user-scroll scrollbar-outer">
+            <li>
+                <div class="user-box d-flex align-items-center gap-2"> 
+                    <div class="avatar-lg mb-2">
+                        {% if global_profile and global_profile.picture %}
                         <img src="data:image/{{ global_profile.filename }};base64,{{ global_profile.picture }}" 
                              alt="Profile Image" 
                              class="avatar-img rounded-circle" 
-                             style="width: 40px; height: 40px; object-fit: cover;" id="navbarProfileImage">
-                    {% else %}
+                             style="width: 70px; height: 70px; object-fit: cover;" id="dropdownProfileImage">
+                        {% else %}
                         <img src="{{ url_for('static', filename='images/1.png') }}" 
                              alt="Default Profile" 
                              class="avatar-img rounded-circle" 
-                             style="width: 40px; height: 40px; object-fit: cover;" id="navbarProfileImage">
-                    {% endif %}
+                             style="width: 70px; height: 70px; object-fit: cover;" id="dropdownProfileImage">
+                        {% endif %}
+                    </div>
+                    <div class="u-text">
+                        <h4>{{ user_name }}</h4>
+                        <p class="text-muted">{{ email }}</p>
+                        <button class="btn btn-xs btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#profileModal">
+                            View Profile
+                        </button>
+                    </div>
                 </div>
-                  <span class="profile-username">
-                      <span class="op-7">Hi,</span>
-                      <span class="fw-bold">{{ user_name }}</span>
-                  </span>
-              </a>
-                <ul class="dropdown-menu dropdown-user animated fadeIn">
-                  <div class="dropdown-user-scroll scrollbar-outer">
-                    <li>
-                      <div class="user-box d-flex align-items-center gap-2"> 
-                  
-                        <!-- In your base template, update the dropdown form section: -->
-<div class="avatar-lg mb-2">
-    {% if global_profile and global_profile.picture %}
-    <img src="data:image/{{ global_profile.filename }};base64,{{ global_profile.picture }}" 
-         alt="Profile Image" 
-         class="avatar-img rounded-circle" 
-         style="width: 70px; height: 70px; object-fit: cover;" id="dropdownProfileImage">
-    {% else %}
-    <img src="{{ url_for('static', filename='images/1.png') }}" 
-         alt="Default Profile" 
-         class="avatar-img rounded-circle" 
-         style="width: 70px; height: 70px; object-fit: cover;" id="dropdownProfileImage">
-    {% endif %}
-    {% if user_type == 'site_engineer' or user_type == 'labour' or user_type == 'admin' %}
-    <form id="profileImageFormDropdown" 
-          action="{% if user_type == 'site_engineer' %}{{ url_for('site_engineer_update_profile_image_local') }}{% elif user_type == 'labour' %}{{ url_for('labour_update_profile_image') }}{% else %}{{ url_for('admin_update_profile_image') }}{% endif %}" 
-          method="POST" enctype="multipart/form-data" style="margin-top: 10px;">
-        <input type="file" name="profile_image" id="dropdownFileInput" class="d-none" accept="image/*"/>
-        <!-- <label for="dropdownFileInput" class="btn btn-sm btn-primary mt-2">
-            <i class="bi bi-camera-fill"></i> Change Photo
-        </label> -->
-    </form>
-    {% endif %}
-</div>
+            </li>
+            <li>
+                <div class="dropdown-divider mt-2"></div>
+                <a class="dropdown-item" href="#">My Profile</a>
+                <a class="dropdown-item" href="#">My Balance</a>
+                <a class="dropdown-item" href="#">Inbox</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Account Setting</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item d-flex align-items-center gap-2" href="
+                    {% if user_type == 'labour' %}{{ url_for('labour_logout') }}
+                    {% elif user_type == 'site_engineer' %}{{ url_for('site_engineer_logout') }}
+                    {% elif user_type == 'admin' %}{{ url_for('admin_logout') }}
+                    {% endif %}">
+                    <i class="bi bi-box-arrow-right fs-2"></i>
+                    <strong class="fs-4">Logout</strong>
+                </a>
+            </li>
+        </div>
+    </ul>
+</li>
 
-                        <div class="u-text">
-                          <h4>{{ user_name }}</h4>
-                          <p class="text-muted">{{ email }}</p>
-                          {% if user_type == 'labour' %}
-                            <a href="{{ url_for('labour_profile') }}" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
-                          {% elif user_type == 'site_engineer' %}
-                            <a href="{{ url_for('site_engineer_profile') }}" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
-                          {% elif user_type == 'admin' %}
-                            <a href="{{url_for('admin_profile')}}" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="dropdown-divider mt-2"></div>
-                      <a class="dropdown-item" href="#">My Profile</a>
-                      <a class="dropdown-item" href="#">My Balance</a>
-                      <a class="dropdown-item" href="#">Inbox</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#">Account Setting</a>
-                      <div class="dropdown-divider"></div>
-                      {% if user_type == 'labour' %}
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{url_for('labour_logout')}}">
-                          <i class="bi bi-box-arrow-right fs-2"></i>
-                          <strong class="fs-4">Logout</strong>
-                        </a>
-                      {% elif user_type == 'site_engineer' %}
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{url_for('site_engineer_logout')}}">
-                          <i class="bi bi-box-arrow-right fs-2"></i>
-                          <strong class="fs-4">Logout</strong>
-                        </a>
-                      {% elif user_type == 'admin' %}
-                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{url_for('admin_logout')}}">
-                          <i class="bi bi-box-arrow-right fs-2"></i>
-                          <strong class="fs-4">Logout</strong>
-                        </a>
-                      {% endif %}
-                    </li>
-                  </div>
-                </ul>
-              </li>
             </ul>
           </div>
         </nav>
         <!-- End Navbar -->
       </div>
-
+ <!-- Single Profile Modal for all user types -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Alert placeholder -->
+                <div id="profileImageAlert"></div>
+                
+                <div class="position-relative">
+                    <div class="bg-primary bg-gradient rounded-top" style="height: 100px;"></div>
+                    <div class="text-center" style="margin-top: -50px;">
+                        {% if global_profile and global_profile.picture %}
+                            <img src="data:image/{{ global_profile.filename }};base64,{{ global_profile.picture }}" 
+                                 class="rounded-circle border border-5 border-white" 
+                                 width="100" height="100" id="modalProfileImage">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/1.png') }}" 
+                                 class="rounded-circle border border-5 border-white" 
+                                 width="100" height="100" id="modalProfileImage">
+                        {% endif %}
+                        <button class="btn btn-light rounded-circle position-absolute top-100 start-50 translate-middle shadow-sm" 
+                                style="width: 40px; height: 40px;" id="editButton">
+                            <i class="bi bi-pencil text-primary"></i>
+                        </button>
+                        <form id="profileImageForm" method="POST" enctype="multipart/form-data" action="
+                            {% if user_type == 'labour' %}{{ url_for('labour_update_profile_image') }}
+                            {% elif user_type == 'site_engineer' %}{{ url_for('site_engineer_update_profile_image_local') }}
+                            {% elif user_type == 'admin' %}{{ url_for('admin_update_profile_image') }}
+                            {% endif %}">
+                            <input type="file" name="profile_image" id="imageUpload" class="d-none" accept="image/*">
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <h4>{{ user_name }}</h4>
+                    <span class="badge rounded-pill px-3 py-2 mb-2" style="background-color: #7a81a8;">
+                        {% if user_type == 'admin' %}Admin
+                        {% elif user_type == 'site_engineer' %}Site Engineer
+                        {% elif user_type == 'labour' %}Labour
+                        {% endif %}
+                    </span>
+                    <p class="text-muted">{{ email }}</p>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-2 border-top pt-3 mt-3">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" id="resetImageBtn">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Default
+                    </button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="saveChangesBtn">
+                        <i class="bi bi-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
       <!-- Content section -->
       <div class="container">
         {% block content %}
@@ -909,6 +946,94 @@ document.getElementById('dropdownFileInput').addEventListener('change', function
     }
 });
 </script>
+
+Profile Script 
+ <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const profileImage = document.getElementById('modalProfileImage');
+    const navbarProfileImage = document.getElementById('navbarProfileImage');
+    const dropdownProfileImage = document.getElementById('dropdownProfileImage');
+    const editButton = document.getElementById('editButton');
+    const imageUpload = document.getElementById('imageUpload');
+    const resetImageBtn = document.getElementById('resetImageBtn');
+    const saveChangesBtn = document.getElementById('saveChangesBtn');
+    const profileImageForm = document.getElementById('profileImageForm');
+    const defaultImageUrl = "{{ url_for('static', filename='images/1.png') }}";
+    const alertDiv = document.getElementById('profileImageAlert');
+
+    // When edit button is clicked, trigger file input
+    editButton.addEventListener('click', function() {
+        imageUpload.click();
+    });
+
+    // Handle image selection
+    imageUpload.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Update all instances of the profile image
+                profileImage.src = event.target.result;
+                navbarProfileImage.src = event.target.result;
+                if (dropdownProfileImage) {
+                    dropdownProfileImage.src = event.target.result;
+                }
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    // Reset to default image
+    resetImageBtn.addEventListener('click', function() {
+        profileImage.src = defaultImageUrl;
+        navbarProfileImage.src = defaultImageUrl;
+        if (dropdownProfileImage) {
+            dropdownProfileImage.src = defaultImageUrl;
+        }
+        imageUpload.value = '';
+    });
+
+    // Save changes (AJAX upload)
+    saveChangesBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (imageUpload.files && imageUpload.files[0]) {
+            const formData = new FormData(profileImageForm);
+            let url = profileImageForm.getAttribute('action');
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show alert
+                if (data.success) {
+                    alertDiv.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                } else {
+                    alertDiv.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                }
+            })
+            .catch(error => {
+                alertDiv.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    Error uploading image.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`;
+            });
+        } else {
+            alertDiv.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+                No changes to save.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        }
+    });
+});
+</script> 
+
 </body>
 
 </html>
