@@ -208,12 +208,34 @@
                     const attendanceForm = document.getElementById("attendanceForm");
                     const updateAttendanceForm = document.getElementById("updateAttendanceForm");
 
+                    function configureToast() {
+        return Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+    }
+
                     attendanceForm.addEventListener("submit", async (event) => {
                         event.preventDefault(); // Prevent default form submission
 
                         const formData = new FormData(attendanceForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         try {
                             const response = await fetch("/register_attendance", {
                                 method: "POST",
@@ -223,15 +245,28 @@
 
                             const result = await response.json();
                             if (result.success) {
-                                alert(result.message);
-                                attendanceForm.reset();
-                                location.reload();
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Attendance Registered`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Attendance recorded successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Registration Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to record attendance."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Registration Error:", error);
-                            alert("An error occurred during registration.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during registration.</div>`
+                            });
                         }
                     });
 
@@ -241,6 +276,7 @@
                         const formData = new FormData(updateAttendanceForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         try {
                             const response = await fetch("/update_attendance", {
                                 method: "POST",
@@ -250,15 +286,28 @@
 
                             const result = await response.json();
                             if (result.success) {
-                                alert(result.message);
-                                updateAttendanceForm.reset();
-                                location.reload();
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Attendance Updated`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Attendance updated successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Update Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update attendance."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Update Error:", error);
-                            alert("An error occurred during update.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during update.</div>`
+                            });
                         }
                     });
 
@@ -266,16 +315,34 @@
                         button.addEventListener("click", function () {
                             const attendanceId = this.getAttribute("data-attendance-id");
                             const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-                            document.getElementById("confirmDelete").addEventListener("click", function () {
-                                fetch(`/delete_attendance/${attendanceId}`, { method: "POST" })
-                                    .then(response => {
-                                        if (response.ok) location.reload();
-                                        else alert("Error deleting attendance.");
-                                    })
-                                    .catch(error => {
-                                        console.error("Delete Error:", error);
-                                        alert("An error occurred during deletion.");
+                            document.getElementById("confirmDelete").addEventListener("click", async function () {
+                                const Toast = configureToast();
+                                try {
+                                    const response = await fetch(`/delete_attendance/${attendanceId}`, { method: "POST" });
+                                    if (response.ok) {
+                                        Toast.fire({
+                                            icon: 'success',
+                                            iconColor: '#27ae60',
+                                            title: `Attendance Deleted`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Attendance deleted successfully!</div>`
+                                        });
+                                        setTimeout(() => location.reload(), 1500);
+                                    } else {
+                                        Toast.fire({
+                                            icon: 'error',
+                                            iconColor: '#e74c3c',
+                                            title: `Delete Failed`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Error deleting attendance.</div>`
+                                        });
+                                    }
+                                } catch (error) {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `System Error`,
+                                        html: `<div style="margin-top:8px;font-size:15px">An error occurred during deletion.</div>`
                                     });
+                                }
                             });
                             deleteModal.show();
                         });

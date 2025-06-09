@@ -289,18 +289,22 @@ document.addEventListener("DOMContentLoaded", function() {
     // Handle wage form submission
     wageForm.addEventListener("submit", async function(e) {
         e.preventDefault();
-        
-        // Disable submit button to prevent multiple submissions
         const submitBtn = wageForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
 
         const formData = new FormData(wageForm);
         const data = Object.fromEntries(formData.entries());
+        const Toast = configureToast();
 
         // Check if total days is zero
         if (parseInt(data.total_days) === 0) {
-            alert("Cannot register wage for labour with zero present days");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Registration Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">Cannot register wage for labour with zero present days</div>`
+            });
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Register Wage';
             return;
@@ -314,56 +318,70 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             const result = await response.json();
-            
+
             if (response.ok && result.success) {
-                alert("Wage recorded successfully!");
-                window.location.href = result.redirect_url || '/admin/manage_wages';
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Wage Recorded`,
+                    html: `<div style="margin-top:8px;font-size:15px">Wage recorded successfully!</div>`
+                });
+                setTimeout(() => window.location.href = result.redirect_url || '/admin/manage_wages', 1500);
             } else {
-                alert(result.message || "Failed to record wage. Please check the details and try again.");
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Registration Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to record wage."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to record wage. Please try again.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to record wage. Please try again.</div>`
+            });
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Register Wage';
         }
     });
 
- document.querySelectorAll(".edit-wage").forEach(button => {
-    button.addEventListener("click", function() {
-        const wageId = this.getAttribute("data-wage-id");
-        const currentLabourId = this.getAttribute("data-labour-id");
-        const currentProjectId = this.getAttribute("data-project-id");
-        
-        fetch(`/admin/get_wage/${wageId}`)
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    const wage = result.wage;
-                    document.getElementById("wage_id").value = wage.wage_id;
-                    document.getElementById("update_labour_id").value = wage.labour_id;
-                    document.getElementById("update_project_id").value = wage.project_id;
-                    document.getElementById("update_daily_rate").value = wage.daily_rate;
-                    document.getElementById("update_total_days").value = wage.total_days;
-                    document.getElementById("update_total_wage").value = wage.total_wage;
+    document.querySelectorAll(".edit-wage").forEach(button => {
+        button.addEventListener("click", function() {
+            const wageId = this.getAttribute("data-wage-id");
+            const currentLabourId = this.getAttribute("data-labour-id");
+            const currentProjectId = this.getAttribute("data-project-id");
+            
+            fetch(`/admin/get_wage/${wageId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const wage = result.wage;
+                        document.getElementById("wage_id").value = wage.wage_id;
+                        document.getElementById("update_labour_id").value = wage.labour_id;
+                        document.getElementById("update_project_id").value = wage.project_id;
+                        document.getElementById("update_daily_rate").value = wage.daily_rate;
+                        document.getElementById("update_total_days").value = wage.total_days;
+                        document.getElementById("update_total_wage").value = wage.total_wage;
 
-                    // Store original values for validation
-                    document.getElementById("update_labour_id").setAttribute("data-original-labour", currentLabourId);
-                    document.getElementById("update_project_id").setAttribute("data-original-project", currentProjectId);
+                        // Store original values for validation
+                        document.getElementById("update_labour_id").setAttribute("data-original-labour", currentLabourId);
+                        document.getElementById("update_project_id").setAttribute("data-original-project", currentProjectId);
 
-                    const modal = new bootstrap.Modal(document.getElementById("updateWageModal"));
-                    modal.show();
-                } else {
-                    alert("Failed to load wage: " + result.message);
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("Failed to load wage data.");
-            });
+                        const modal = new bootstrap.Modal(document.getElementById("updateWageModal"));
+                        modal.show();
+                    } else {
+                        alert("Failed to load wage: " + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Failed to load wage data.");
+                });
+        });
     });
-});
     // Handle update form submission
   // Handle update form submission
 updateWageForm.addEventListener("submit", async function(e) {
@@ -371,6 +389,7 @@ updateWageForm.addEventListener("submit", async function(e) {
     
     const labourId = document.getElementById('update_labour_id').value;
     const projectId = document.getElementById('update_project_id').value;
+    const Toast = configureToast();
     
     // First check if labour is assigned to project
     try {
@@ -378,7 +397,12 @@ updateWageForm.addEventListener("submit", async function(e) {
         const result = await response.json();
         
         if (!result.is_assigned) {
-            alert("This labour is not assigned to the selected project");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Update Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">This labour is not assigned to the selected project</div>`
+            });
             return;
         }
         
@@ -398,13 +422,29 @@ updateWageForm.addEventListener("submit", async function(e) {
 
         const updateResult = await updateResponse.json();
         if (updateResult.success) {
-            window.location.reload();
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Wage Updated`,
+                html: `<div style="margin-top:8px;font-size:15px">Wage updated successfully!</div>`
+            });
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert("Error: " + updateResult.message);
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Update Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${updateResult.message || "Failed to update wage."}</div>`
+            });
         }
     } catch (error) {
         console.error("Error:", error);
-        alert("Failed to update wage. Please try again.");
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to update wage. Please try again.</div>`
+        });
     } finally {
         const submitBtn = updateWageForm.querySelector('button[type="submit"]');
         if (submitBtn) {
@@ -425,11 +465,10 @@ document.querySelectorAll(".delete-wage").forEach(button => {
 // Confirm delete
 document.getElementById("confirmDelete").addEventListener("click", async function() {
     if (!currentDeleteId) return;
-
-    // Show loading state
     const deleteBtn = this;
     deleteBtn.disabled = true;
     deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+    const Toast = configureToast();
 
     try {
         const response = await fetch(`/admin/delete_wage/${currentDeleteId}`, {
@@ -439,14 +478,28 @@ document.getElementById("confirmDelete").addEventListener("click", async functio
 
         const result = await response.json();
         if (result.success) {
-            // Refresh the page after successful delete
-            window.location.reload();
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Wage Deleted`,
+                html: `<div style="margin-top:8px;font-size:15px">Wage deleted successfully!</div>`
+            });
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert("Error: " + result.message);
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Delete Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete wage."}</div>`
+            });
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("Failed to delete wage. Please try again.");
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to delete wage. Please try again.</div>`
+        });
     } finally {
         deleteModal.hide();
         currentDeleteId = null;
@@ -455,6 +508,28 @@ document.getElementById("confirmDelete").addEventListener("click", async functio
     }
 });
 });
+
+// Toast configuration function (matching attendance toast)
+function configureToast() {
+    return Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        width: '380px',
+        padding: '16px',
+        background: '#fff',
+        color: '#2c3e50',
+        customClass: {
+            timerProgressBar: 'swal2-timer-progress-bar-custom'
+        },
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+}
 </script>
 
 {% endblock %}

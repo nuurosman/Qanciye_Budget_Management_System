@@ -179,8 +179,8 @@
                                 <input type="hidden" name="site_engineer_name" value="{{ site_engineer_name }}">
                                 <input type="hidden" id="attendance_id" name="attendance_id">
                                 <div class="mb-3">
-                                    <label for="update_labour_id" class="form-label">Labour</label>
-                                    <select class="form-select" id="update_labour_id" name="labour_id" required>
+                                    <label for="update_labour_id" class="form-label" >Labour</label>
+                                    <select class="form-select" id="update_labour_id" name="labour_id" required >
                                         {% for labour in assigned_labour %}
                                         <option value="{{ labour.labour_id }}">{{ labour.full_name }}</option>
                                         {% endfor %}
@@ -196,7 +196,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="update_date" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="update_date" name="date" required>
+                                    <input type="date" class="form-control" id="update_date" name="date" required >
                                 </div>
                                 <div class="mb-3">
                                     <label for="update_status" class="form-label">Status</label>
@@ -243,32 +243,83 @@
                     console.error('Error fetching labour project:', error);
                 });
         });
-    
-        // Handle new attendance submission
-        attendanceForm.addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const formData = new FormData(attendanceForm);
-            const data = Object.fromEntries(formData.entries());
-    
-            try {
-                const response = await fetch("/site_engineer/register_siteEngineer_attendance", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-    
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert("Attendance recorded successfully!");
-                    location.reload();
-                } else {
-                    alert("Error: " + (result.message || "Failed to record attendance."));
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Failed to record attendance. Please try again.");
+ // Handle new attendance submission
+attendanceForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(attendanceForm);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch("/site_engineer/register_siteEngineer_attendance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        
+        // Configure the toast notification
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
         });
+
+        if (response.ok && result.success) {
+            // Success case - green icon
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Attendance Recorded`,
+                html: `<div style="margin-top:8px;font-size:15px">Attendance successfully registered</div>`
+            });
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // Failure case - red danger icon
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c', // Danger color
+                title: `Registration Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to record attendance"}</div>`
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        // System error case - red danger icon
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            iconColor: '#e74c3c', // Danger color
+            color: '#2c3e50'
+        });
+        Toast.fire({
+            icon: 'error',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to record attendance. Please try again.</div>`
+        });
+    }
+});
     
         // Handle edit buttons
         document.querySelectorAll(".edit-attendance").forEach(button => {
@@ -301,65 +352,160 @@
             });
         });
 
-        // Handle update form submission
-        updateAttendanceForm.addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const formData = new FormData(updateAttendanceForm);
-            const data = Object.fromEntries(formData.entries());
+// Handle update form submission
+updateAttendanceForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(updateAttendanceForm);
+    const data = Object.fromEntries(formData.entries());
 
-            try {
-                const response = await fetch("/update_siteEngineer_attendance", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
+    try {
+        const response = await fetch("/update_siteEngineer_attendance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
 
-                const result = await response.json();
-                if (result.success) {
-                    alert("Attendance updated successfully!");
-                    location.reload();
-                } else {
-                    alert("Error: " + result.message);
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Failed to update attendance. Please try again.");
+        const result = await response.json();
+        
+        // Configure base toast settings
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
         });
 
-        // Handle delete buttons
-        document.querySelectorAll(".delete-attendance").forEach(button => {
-            button.addEventListener("click", function() {
-                currentDeleteId = this.getAttribute("data-attendance-id");
-                deleteModal.show();
+        if (response.ok && result.success) {
+            // Success case - green icon
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Update Successful`,
+                html: `<div style="margin-top:8px;font-size:15px">Attendance record updated</div>`
             });
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // API error case - red icon
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Update Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update record"}</div>`
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        // System error case - red icon
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            iconColor: '#e74c3c',
+            color: '#2c3e50'
         });
-    
-        // Confirm delete
-        document.getElementById("confirmDelete").addEventListener("click", async function() {
-            if (!currentDeleteId) return;
-    
-            try {
-                const response = await fetch(`/delete_attendance/${currentDeleteId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" }
-                });
-    
-                const result = await response.json();
-                if (result.success) {
-                    alert("Attendance deleted successfully!");
-                    location.reload();
-                } else {
-                    alert("Error: " + result.message);
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Failed to delete attendance. Please try again.");
-            } finally {
-                deleteModal.hide();
-                currentDeleteId = null;
-            }
+        Toast.fire({
+            icon: 'error',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to process update</div>`
         });
+    }
+});
+
+       // Handle delete buttons
+document.querySelectorAll(".delete-attendance").forEach(button => {
+    button.addEventListener("click", function() {
+        currentDeleteId = this.getAttribute("data-attendance-id");
+        deleteModal.show();
+    });
+});
+
+// Configure base toast settings (can be shared with other components)
+const configureToast = () => Swal.mixin({
+    toast: true,
+    position: 'top',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    width: '380px',
+    padding: '16px',
+    background: '#fff',
+    color: '#2c3e50',
+    customClass: {
+        timerProgressBar: 'swal2-timer-progress-bar-custom'
+    },
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});
+
+// Confirm delete
+document.getElementById("confirmDelete").addEventListener("click", async function() {
+    if (!currentDeleteId) return;
+
+    const Toast = configureToast();
+
+    try {
+        const response = await fetch(`/delete_attendance/${currentDeleteId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            // Success deletion - green icon
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Deletion Successful`,
+                html: `<div style="margin-top:8px;font-size:15px">Attendance record deleted</div>`
+            });
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // API error - red icon
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Deletion Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete record"}</div>`
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        // System error - red icon
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to process deletion</div>`
+        });
+    } finally {
+        deleteModal.hide();
+        currentDeleteId = null;
+    }
+});
     });
     </script>
 

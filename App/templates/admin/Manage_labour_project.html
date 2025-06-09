@@ -144,6 +144,27 @@
                     const assignmentForm = document.getElementById("assignmentForm");
                     const updateAssignmentForm = document.getElementById("updateAssignmentForm");
 
+                    function configureToast() {
+                        return Swal.mixin({
+                            toast: true,
+                            position: 'top',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '380px',
+                            padding: '16px',
+                            background: '#fff',
+                            color: '#2c3e50',
+                            customClass: {
+                                timerProgressBar: 'swal2-timer-progress-bar-custom'
+                            },
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                    }
+
                     assignmentForm.addEventListener("submit", async (event) => {
                         event.preventDefault(); // Prevent default form submission
 
@@ -151,6 +172,7 @@
                         const formData = new FormData(assignmentForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         try {
                             const response = await fetch("/register_assignment", {
                                 method: "POST",
@@ -163,15 +185,28 @@
                             const result = await response.json();
 
                             if (result.success) {
-                                alert(result.message);
-                                assignmentForm.reset(); // Reset the form
-                                location.reload(); // Reload the page to reflect changes
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Assignment Registered`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Assignment added successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Registration Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to add assignment."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Registration Error:", error);
-                            alert("An error occurred during registration.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during registration.</div>`
+                            });
                         }
                     });
 
@@ -182,6 +217,7 @@
                         const formData = new FormData(updateAssignmentForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         try {
                             const response = await fetch("/update_assignment", {
                                 method: "POST",
@@ -194,15 +230,28 @@
                             const result = await response.json();
 
                             if (result.success) {
-                                alert(result.message);
-                                updateAssignmentForm.reset(); // Reset the form
-                                location.reload(); // Reload the page to reflect changes
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Assignment Updated`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Assignment updated successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Update Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update assignment."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Update Error:", error);
-                            alert("An error occurred during update.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during update.</div>`
+                            });
                         }
                     });
 
@@ -210,19 +259,36 @@
                         button.addEventListener("click", function () {
                             const assignmentId = this.getAttribute("data-assignment-id");
                             const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-                            document.getElementById("confirmDelete").addEventListener("click", function () {
-                                fetch(`/delete_assignment/${assignmentId}`, {
-                                    method: "POST"
-                                }).then(response => {
+                            document.getElementById("confirmDelete").addEventListener("click", async function () {
+                                const Toast = configureToast();
+                                try {
+                                    const response = await fetch(`/delete_assignment/${assignmentId}`, {
+                                        method: "POST"
+                                    });
                                     if (response.ok) {
-                                        location.reload();
+                                        Toast.fire({
+                                            icon: 'success',
+                                            iconColor: '#27ae60',
+                                            title: `Assignment Deleted`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Assignment deleted successfully!</div>`
+                                        });
+                                        setTimeout(() => location.reload(), 1500);
                                     } else {
-                                        alert("Error deleting assignment.");
+                                        Toast.fire({
+                                            icon: 'error',
+                                            iconColor: '#e74c3c',
+                                            title: `Delete Failed`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Error deleting assignment.</div>`
+                                        });
                                     }
-                                }).catch(error => {
-                                    console.error("Delete Error:", error);
-                                    alert("An error occurred during deletion.");
-                                });
+                                } catch (error) {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `System Error`,
+                                        html: `<div style="margin-top:8px;font-size:15px">An error occurred during deletion.</div>`
+                                    });
+                                }
                             });
                             deleteModal.show();
                         });

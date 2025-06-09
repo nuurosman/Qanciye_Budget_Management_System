@@ -282,37 +282,70 @@
 
             <script>
                 const projectForm = document.getElementById("projectForm");
+                function configureToast() {
+    return Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        width: '380px',
+        padding: '16px',
+        background: '#fff',
+        color: '#2c3e50',
+        customClass: {
+            timerProgressBar: 'swal2-timer-progress-bar-custom'
+        },
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+}
+projectForm.addEventListener("submit", async (event) => {
+    event.preventDefault(); // Prevent default form submission
 
-                projectForm.addEventListener("submit", async (event) => {
-                    event.preventDefault(); // Prevent default form submission
+    // Gather form data
+    const formData = new FormData(projectForm);
+    const data = Object.fromEntries(formData);
 
-                    // Gather form data
-                    const formData = new FormData(projectForm);
-                    const data = Object.fromEntries(formData);
+    const Toast = configureToast();
+    try {
+        const response = await fetch("/register_project", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
 
-                    try {
-                        const response = await fetch("/register_project", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify(data),
-                        });
+        const result = await response.json();
 
-                        const result = await response.json();
-
-                        if (result.success) {
-                            alert(result.message);
-                            projectForm.reset(); // Reset the form
-                            location.reload(); // Reload the page to reflect changes
-                        } else {
-                            alert("Error: " + result.message); // Will show budget validation error if any
-                        }
-                    } catch (error) {
-                        console.error("Registration Error:", error);
-                        alert("An error occurred during registration.");
-                    }
-                });
+        if (result.success) {
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Project Registered`,
+                html: `<div style="margin-top:8px;font-size:15px">Project added successfully!</div>`
+            });
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Registration Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to add project."}</div>`
+            });
+        }
+    } catch (error) {
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">An error occurred during registration.</div>`
+        });
+    }
+});
 
                 function fetchDropdownData() {
                     fetch('/get_dropdown_data')

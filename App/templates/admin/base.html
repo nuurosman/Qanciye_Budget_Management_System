@@ -843,6 +843,39 @@
   <script src="{{ url_for('static', filename='js/setting-demo.js') }}"></script>
   <script src="{{ url_for('static', filename='js/demo.js') }}"></script>
 
+  <!-- toast alert=================================================================================-->
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    document.getElementById("triggerButton").addEventListener("click", function() {
+      // Show sleek toast notification
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        width: '380px',
+        padding: '16px',
+        background: '#fff',
+        iconColor: '#27ae60',
+        color: '#2c3e50',
+        customClass: {
+          timerProgressBar: 'swal2-timer-progress-bar-custom'
+        },
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      });
+      
+      Toast.fire({
+        icon: 'success',
+        title: `Payment Processed`,
+        html: `<div style="margin-top:8px;font-size:15px">Wages successfully registered</div>`
+      });
+    });
+  </script>
+
   <script>
     $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
       type: "line",

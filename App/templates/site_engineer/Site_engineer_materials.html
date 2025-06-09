@@ -250,8 +250,28 @@
                     updateQuantityInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
                     updateUnitPriceInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
 
-                    console.log("Site Engineer ID:", document.getElementById("site_engineer_id").value);
-                    console.log("Project ID:", document.getElementById("project_id").value);
+                    // Toast configuration function (matching attendance toast)
+                    function configureToast() {
+                        return Swal.mixin({
+                            toast: true,
+                            position: 'top',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '380px',
+                            padding: '16px',
+                            background: '#fff',
+                            color: '#2c3e50',
+                            customClass: {
+                                timerProgressBar: 'swal2-timer-progress-bar-custom'
+                            },
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                    }
+
                     materialForm.addEventListener("submit", async (e) => {
                         e.preventDefault();
                         const formData = new FormData(materialForm);
@@ -266,14 +286,19 @@
                             quantity: formData.get('quantity'),
                             unit_price: formData.get('unit_price'),
                             amount: formData.get('amount'),
-                            project_id: projectIdInput.value,  // Get from select element
+                            project_id: projectIdInput.value,
                             site_engineer_id: siteEngineerId
                         };
 
-                        console.log("Form data:", data);
+                        const Toast = configureToast();
 
                         if (!data.item_name || !data.quantity || !data.unit_price || !data.amount || !data.project_id || !data.site_engineer_id) {
-                            alert("Please fill in all required fields.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `Registration Failed`,
+                                html: `<div style="margin-top:8px;font-size:15px">Please fill in all required fields.</div>`
+                            });
                             return;
                         }
 
@@ -286,15 +311,28 @@
 
                             const result = await response.json();
                             if (result.success) {
-                                alert(result.message);
-                                materialForm.reset();
-                                location.reload();
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Material Registered`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Material added successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert(result.message || "An error occurred.");
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Registration Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "An error occurred."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Error:", error);
-                            alert("Failed to save material.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">Failed to save material.</div>`
+                            });
                         }
                     });
                     document.querySelectorAll(".delete-button").forEach(button => {
@@ -316,6 +354,7 @@
     document.getElementById("confirmDelete").addEventListener("click", async function () {
         const materialId = this.getAttribute("data-material-id");
         const deleteUrl = this.getAttribute("data-delete-url");
+        const Toast = configureToast();
 
         try {
             const response = await fetch(`${deleteUrl}${materialId}`, {
@@ -334,13 +373,28 @@
             const data = await response.json();
 
             if (data.success) {
-                location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Material Deleted`,
+                    html: `<div style="margin-top:8px;font-size:15px">Material deleted successfully!</div>`
+                });
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert("Error: " + data.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Deletion Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${data.message || "Error deleting material."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Delete Error:", error);
-            alert("Error: " + error.message);
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Error: ${error.message}</div>`
+            });
         }
     });
 
@@ -411,23 +465,23 @@ document.getElementById('updateMaterialForm').addEventListener('submit', async f
         project_id: parseInt(form.update_project_id.value)
     };
     const submitButton = form.querySelector('button[type="submit"]');
+    const Toast = configureToast();
     submitButton.disabled = true;
-    // Re-enable after fetch
     submitButton.disabled = false;
 
-    // Validate inputs
     if (!data.item_name || isNaN(data.quantity) || isNaN(data.unit_price) || isNaN(data.project_id)) {
-        alert('Please fill all fields with valid values');
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `Update Failed`,
+            html: `<div style="margin-top:8px;font-size:15px">Please fill all fields with valid values</div>`
+        });
         return;
     }
 
-    // Calculate amount to ensure accuracy
     data.amount = data.quantity * data.unit_price;
 
-    console.log("Submitting data:", data);
-
     try {
-        // First verify the material exists
         const verifyResponse = await fetch(`/update_materials_/${data.material_id}`);
         if (!verifyResponse.ok) {
             const verifyError = await verifyResponse.json();
@@ -439,7 +493,6 @@ document.getElementById('updateMaterialForm').addEventListener('submit', async f
             throw new Error(verifyResult.message || 'Material not found');
         }
 
-        // Then proceed with update
         const response = await fetch('/update_materials', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -456,11 +509,20 @@ document.getElementById('updateMaterialForm').addEventListener('submit', async f
             throw new Error(result.message || 'Update failed');
         }
 
-        alert('Material updated successfully!');
-        location.reload();
+        Toast.fire({
+            icon: 'success',
+            iconColor: '#27ae60',
+            title: `Material Updated`,
+            html: `<div style="margin-top:8px;font-size:15px">Material updated successfully!</div>`
+        });
+        setTimeout(() => location.reload(), 1500);
     } catch (error) {
-        console.error('Update error:', error);
-        alert('Error: ' + error.message);
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `Update Failed`,
+            html: `<div style="margin-top:8px;font-size:15px">Error: ${error.message}</div>`
+        });
     }
 });
 // Optional: Live budget checker

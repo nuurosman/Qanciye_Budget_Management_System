@@ -304,6 +304,28 @@ document.addEventListener("DOMContentLoaded", function() {
         if (paymentFor !== 'expense') document.getElementById('expense_id').value = '';
     });
 
+    // Configure SweetAlert2 toast
+    function configureToast() {
+        return Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+    }
+
     // Handle payment form submission
     paymentForm.addEventListener("submit", async function(e) {
         e.preventDefault();
@@ -316,6 +338,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(paymentForm);
         const data = Object.fromEntries(formData.entries());
 
+        const Toast = configureToast();
         try {
             const response = await fetch("/admin/register_payment", {
                 method: "POST",
@@ -324,16 +347,30 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             const result = await response.json();
-            
+
             if (response.ok && result.success) {
-                alert("Payment recorded successfully!");
-                window.location.href = result.redirect_url || '/admin/manage_payments';
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Payment Recorded`,
+                    html: `<div style="margin-top:8px;font-size:15px">Payment recorded successfully!</div>`
+                });
+                setTimeout(() => window.location.href = result.redirect_url || '/admin/manage_payments', 1500);
             } else {
-                alert(result.message || "Failed to record payment. Please check the details and try again.");
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Registration Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to record payment."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to record payment. Please try again.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to record payment. Please try again.</div>`
+            });
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Register Payment';
@@ -388,6 +425,7 @@ document.querySelectorAll(".edit-payment").forEach(button => {
         const formData = new FormData(updatePaymentForm);
         const data = Object.fromEntries(formData.entries());
 
+        const Toast = configureToast();
         try {
             const response = await fetch("/admin/update_payment", {
                 method: "POST",
@@ -397,13 +435,28 @@ document.querySelectorAll(".edit-payment").forEach(button => {
 
             const result = await response.json();
             if (result.success) {
-                window.location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Payment Updated`,
+                    html: `<div style="margin-top:8px;font-size:15px">Payment updated successfully!</div>`
+                });
+                setTimeout(() => window.location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Update Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update payment."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to update payment. Please try again.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to update payment. Please try again.</div>`
+            });
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Update Payment';
@@ -427,6 +480,7 @@ document.querySelectorAll(".edit-payment").forEach(button => {
         deleteBtn.disabled = true;
         deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
 
+        const Toast = configureToast();
         try {
             const response = await fetch(`/admin/delete_payment/${currentDeleteId}`, {
                 method: "POST",
@@ -435,14 +489,28 @@ document.querySelectorAll(".edit-payment").forEach(button => {
 
             const result = await response.json();
             if (result.success) {
-                // Refresh the page after successful delete
-                window.location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Payment Deleted`,
+                    html: `<div style="margin-top:8px;font-size:15px">Payment deleted successfully!</div>`
+                });
+                setTimeout(() => window.location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Delete Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete payment."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to delete payment. Please try again.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to delete payment. Please try again.</div>`
+            });
         } finally {
             deleteModal.hide();
             currentDeleteId = null;

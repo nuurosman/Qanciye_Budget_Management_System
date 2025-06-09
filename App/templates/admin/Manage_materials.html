@@ -218,6 +218,27 @@
                     updateQuantityInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
                     updateUnitPriceInput.addEventListener("input", () => calculateAmount(updateQuantityInput, updateUnitPriceInput, updateAmountInput));
 
+                    function configureToast() {
+                        return Swal.mixin({
+                            toast: true,
+                            position: 'top',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            width: '380px',
+                            padding: '16px',
+                            background: '#fff',
+                            color: '#2c3e50',
+                            customClass: {
+                                timerProgressBar: 'swal2-timer-progress-bar-custom'
+                            },
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                    }
+
                     materialForm.addEventListener("submit", async (event) => {
                         event.preventDefault(); // Prevent default form submission
 
@@ -225,9 +246,15 @@
                         const formData = new FormData(materialForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         // Validate that item_name is not empty
                         if (!data.item_name) {
-                            alert("Item name is required.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `Registration Failed`,
+                                html: `<div style="margin-top:8px;font-size:15px">Item name is required.</div>`
+                            });
                             return;
                         }
 
@@ -243,15 +270,28 @@
                             const result = await response.json();
 
                             if (result.success) {
-                                alert(result.message);
-                                materialForm.reset(); // Reset the form
-                                location.reload(); // Reload the page to reflect changes
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Material Registered`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Material added successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Registration Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to add material."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Registration Error:", error);
-                            alert("An error occurred during registration.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during registration.</div>`
+                            });
                         }
                     });
 
@@ -262,6 +302,7 @@
                         const formData = new FormData(updateMaterialForm);
                         const data = Object.fromEntries(formData);
 
+                        const Toast = configureToast();
                         try {
                             const response = await fetch("/update_material", {
                                 method: "POST",
@@ -274,15 +315,28 @@
                             const result = await response.json();
 
                             if (result.success) {
-                                alert(result.message);
-                                updateMaterialForm.reset(); // Reset the form
-                                location.reload(); // Reload the page to reflect changes
+                                Toast.fire({
+                                    icon: 'success',
+                                    iconColor: '#27ae60',
+                                    title: `Material Updated`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Material updated successfully!</div>`
+                                });
+                                setTimeout(() => location.reload(), 1500);
                             } else {
-                                alert("Error: " + result.message);
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `Update Failed`,
+                                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update material."}</div>`
+                                });
                             }
                         } catch (error) {
-                            console.error("Update Error:", error);
-                            alert("An error occurred during update.");
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `System Error`,
+                                html: `<div style="margin-top:8px;font-size:15px">An error occurred during update.</div>`
+                            });
                         }
                     });
 
@@ -290,19 +344,36 @@
                         button.addEventListener("click", function () {
                             const materialId = this.getAttribute("data-material-id");
                             const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-                            document.getElementById("confirmDelete").addEventListener("click", function () {
-                                fetch(`/delete_material/${materialId}`, {
-                                    method: "POST"
-                                }).then(response => {
+                            document.getElementById("confirmDelete").addEventListener("click", async function () {
+                                const Toast = configureToast();
+                                try {
+                                    const response = await fetch(`/delete_material/${materialId}`, {
+                                        method: "POST"
+                                    });
                                     if (response.ok) {
-                                        location.reload();
+                                        Toast.fire({
+                                            icon: 'success',
+                                            iconColor: '#27ae60',
+                                            title: `Material Deleted`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Material deleted successfully!</div>`
+                                        });
+                                        setTimeout(() => location.reload(), 1500);
                                     } else {
-                                        alert("Error deleting material.");
+                                        Toast.fire({
+                                            icon: 'error',
+                                            iconColor: '#e74c3c',
+                                            title: `Delete Failed`,
+                                            html: `<div style="margin-top:8px;font-size:15px">Error deleting material.</div>`
+                                        });
                                     }
-                                }).catch(error => {
-                                    console.error("Delete Error:", error);
-                                    alert("An error occurred during deletion.");
-                                });
+                                } catch (error) {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `System Error`,
+                                        html: `<div style="margin-top:8px;font-size:15px">An error occurred during deletion.</div>`
+                                    });
+                                }
                             });
                             deleteModal.show();
                         });

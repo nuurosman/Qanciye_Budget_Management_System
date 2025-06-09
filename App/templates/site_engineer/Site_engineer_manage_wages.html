@@ -281,18 +281,21 @@ document.addEventListener("DOMContentLoaded", function() {
     // Handle wage form submission
     wageForm.addEventListener("submit", async function(e) {
         e.preventDefault();
-        
-        // Disable submit button to prevent multiple submissions
         const submitBtn = wageForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
 
         const formData = new FormData(wageForm);
         const data = Object.fromEntries(formData.entries());
+        const Toast = configureToast();
 
-        // Check if total days is zero
         if (parseInt(data.total_days) === 0) {
-            alert("Cannot register wage for labour with zero present days");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Registration Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">Cannot register wage for labour with zero present days</div>`
+            });
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Register Wage';
             return;
@@ -306,16 +309,30 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             const result = await response.json();
-            
+
             if (response.ok && result.success) {
-                alert("Wage recorded successfully!");
-                location.reload(); // Reload to reflect changes
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Wage Recorded`,
+                    html: `<div style="margin-top:8px;font-size:15px">Wage recorded successfully!</div>`
+                });
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert(result.message || "Failed to record wage. Please check the details and try again.");
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Registration Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to record wage."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to record wage. Please try again.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to record wage. Please try again.</div>`
+            });
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = 'Register Wage';
@@ -340,6 +357,7 @@ document.querySelectorAll(".edit-wage").forEach(button => {
         })
         .then(response => response.json())
         .then(ownership => {
+            const Toast = configureToast();
             if (ownership.can_edit) {
                 // Populate form fields directly from data attributes
                 document.getElementById("wage_id").value = wageId;
@@ -353,12 +371,22 @@ document.querySelectorAll(".edit-wage").forEach(button => {
                 const modal = new bootstrap.Modal(document.getElementById("updateWageModal"));
                 modal.show();
             } else {
-                alert("You can only edit wages for your assigned projects");
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Edit Not Allowed`,
+                    html: `<div style="margin-top:8px;font-size:15px">You can only edit wages for your assigned projects</div>`
+                });
             }
         })
         .catch(error => {
-            console.error("Error checking ownership:", error);
-            alert("Failed to check wage ownership");
+            const Toast = configureToast();
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">Failed to check wage ownership</div>`
+            });
         });
     });
 });
@@ -366,13 +394,13 @@ document.querySelectorAll(".edit-wage").forEach(button => {
 // Handle update form submission
 updateWageForm.addEventListener("submit", async function(e) {
     e.preventDefault();
-    
     const submitBtn = updateWageForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
 
     const formData = new FormData(updateWageForm);
     const data = Object.fromEntries(formData.entries());
+    const Toast = configureToast();
 
     try {
         const response = await fetch("/update_siteEngineer_wage", {
@@ -390,14 +418,28 @@ updateWageForm.addEventListener("submit", async function(e) {
 
         const result = await response.json();
         if (result.success) {
-            alert("Wage updated successfully!");
-            window.location.reload(); // Force refresh
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Wage Updated`,
+                html: `<div style="margin-top:8px;font-size:15px">Wage updated successfully!</div>`
+            });
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert("Error: " + result.message);
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Update Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update wage."}</div>`
+            });
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("Failed to update wage. Please try again.");
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to update wage. Please try again.</div>`
+        });
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'Update Wage';
@@ -407,10 +449,10 @@ updateWageForm.addEventListener("submit", async function(e) {
 // Confirm delete
 document.getElementById("confirmDelete").addEventListener("click", async function() {
     if (!currentDeleteId) return;
-
     const deleteBtn = this;
     deleteBtn.disabled = true;
     deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+    const Toast = configureToast();
 
     try {
         // First check if user has permission to delete this record
@@ -423,7 +465,12 @@ document.getElementById("confirmDelete").addEventListener("click", async functio
         const ownership = await ownershipCheck.json();
         
         if (!ownership.can_delete) {
-            alert("You can only delete records you created");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Delete Not Allowed`,
+                html: `<div style="margin-top:8px;font-size:15px">You can only delete records you created</div>`
+            });
             deleteModal.hide();
             currentDeleteId = null;
             return;
@@ -443,15 +490,28 @@ document.getElementById("confirmDelete").addEventListener("click", async functio
         const result = await response.json();
         
         if (result.success) {
-            alert("Wage deleted successfully!");
-            location.reload(); // Reload to reflect changes
+            Toast.fire({
+                icon: 'success',
+                iconColor: '#27ae60',
+                title: `Wage Deleted`,
+                html: `<div style="margin-top:8px;font-size:15px">Wage deleted successfully!</div>`
+            });
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert("Error: " + result.message);
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `Delete Failed`,
+                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete wage."}</div>`
+            });
         }
     } catch (error) {
-        console.error("Error:", error);
-        // Only show error if deletion was not successful
-        alert("Failed to delete wage. Please try again.");
+        Toast.fire({
+            icon: 'error',
+            iconColor: '#e74c3c',
+            title: `System Error`,
+            html: `<div style="margin-top:8px;font-size:15px">Failed to delete wage. Please try again.</div>`
+        });
     } finally {
         deleteModal.hide();
         currentDeleteId = null;
@@ -468,6 +528,28 @@ document.getElementById("confirmDelete").addEventListener("click", async functio
         });
     });
 });
+
+// Toast configuration function (matching attendance toast)
+function configureToast() {
+    return Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        width: '380px',
+        padding: '16px',
+        background: '#fff',
+        color: '#2c3e50',
+        customClass: {
+            timerProgressBar: 'swal2-timer-progress-bar-custom'
+        },
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+}
 
 </script>
 

@@ -240,12 +240,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmDeleteExpenseButton = document.getElementById("confirmDeleteExpense");
     let currentDeleteId = null;
 
+    function configureToast() {
+        return Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+    }
+
     // Handle expense registration
     expenseForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(expenseForm);
         const data = Object.fromEntries(formData.entries());
         data.admin_id = "{{ session.get('admin_id') }}";
+        const Toast = configureToast();
         try {
             const response = await fetch("/register_expense", {
                 method: "POST",
@@ -254,14 +276,28 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const result = await response.json();
             if (result.success) {
-                alert(result.message);
-                location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Expense Registered`,
+                    html: `<div style="margin-top:8px;font-size:15px">Expense added successfully!</div>`
+                });
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Registration Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to add expense."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("An error occurred.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">An error occurred.</div>`
+            });
         }
     });
 
@@ -282,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         const formData = new FormData(updateExpenseForm);
         const data = Object.fromEntries(formData.entries());
+        const Toast = configureToast();
         try {
             const response = await fetch("/update_expense", {
                 method: "POST",
@@ -290,14 +327,28 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const result = await response.json();
             if (result.success) {
-                alert(result.message);
-                location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Expense Updated`,
+                    html: `<div style="margin-top:8px;font-size:15px">Expense updated successfully!</div>`
+                });
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Update Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update expense."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("An error occurred.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">An error occurred.</div>`
+            });
         }
     });
 
@@ -310,18 +361,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     confirmDeleteExpenseButton.onclick = async () => {
         if (!currentDeleteId) return;
+        const Toast = configureToast();
         try {
             const response = await fetch(`/delete_expense/${currentDeleteId}`, { method: "POST" });
             const result = await response.json();
             if (result.success) {
-                alert(result.message);
-                location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Expense Deleted`,
+                    html: `<div style="margin-top:8px;font-size:15px">Expense deleted successfully!</div>`
+                });
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Delete Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete expense."}</div>`
+                });
             }
         } catch (error) {
-            console.error("Delete Error:", error);
-            alert("An error occurred during deletion.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">An error occurred during deletion.</div>`
+            });
         }
         deleteExpenseModal.hide();
         currentDeleteId = null;

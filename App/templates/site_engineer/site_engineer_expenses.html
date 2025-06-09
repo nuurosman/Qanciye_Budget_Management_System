@@ -233,11 +233,34 @@
                 const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
                 let currentDeleteId = null;
 
+                // Toast configuration function (matching attendance toast)
+                function configureToast() {
+                    return Swal.mixin({
+                        toast: true,
+                        position: 'top',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        width: '380px',
+                        padding: '16px',
+                        background: '#fff',
+                        color: '#2c3e50',
+                        customClass: {
+                            timerProgressBar: 'swal2-timer-progress-bar-custom'
+                        },
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                }
+
                 // Handle new expense submission
                 expenseForm.addEventListener("submit", async function (e) {
                     e.preventDefault();
                     const formData = new FormData(expenseForm);
                     const data = Object.fromEntries(formData.entries());
+                    const Toast = configureToast();
 
                     try {
                         const response = await fetch("/site_engineer/register_expenses", {
@@ -248,14 +271,28 @@
 
                         const result = await response.json();
                         if (response.ok && result.success) {
-                            alert("Expense added successfully!");
-                            location.reload();
+                            Toast.fire({
+                                icon: 'success',
+                                iconColor: '#27ae60',
+                                title: `Expense Registered`,
+                                html: `<div style="margin-top:8px;font-size:15px">Expense added successfully!</div>`
+                            });
+                            setTimeout(() => location.reload(), 1500);
                         } else {
-                            alert("Error: " + (result.message || "Failed to add expense."));
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `Registration Failed`,
+                                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to add expense."}</div>`
+                            });
                         }
                     } catch (error) {
-                        console.error("Error:", error);
-                        alert("Failed to add expense. Please try again.");
+                        Toast.fire({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: `System Error`,
+                            html: `<div style="margin-top:8px;font-size:15px">Failed to add expense. Please try again.</div>`
+                        });
                     }
                 });
 
@@ -266,6 +303,7 @@
                         fetch(`/get_expenses/${expenseId}`)
                             .then(response => response.json())
                             .then(result => {
+                                const Toast = configureToast();
                                 if (result.success) {
                                     const expense = result.expense;
                                     document.getElementById("expense_id").value = expense.expense_id;
@@ -277,12 +315,22 @@
                                     const modal = new bootstrap.Modal(document.getElementById("updateExpensesModal"));
                                     modal.show();
                                 } else {
-                                    alert("Failed to load expense: " + result.message);
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `Load Failed`,
+                                        html: `<div style="margin-top:8px;font-size:15px">Failed to load expense: ${result.message}</div>`
+                                    });
                                 }
                             })
                             .catch(error => {
-                                console.error("Error:", error);
-                                alert("Failed to load expense data.");
+                                const Toast = configureToast();
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `System Error`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Failed to load expense data.</div>`
+                                });
                             });
                     });
                 });
@@ -292,6 +340,7 @@
                     e.preventDefault();
                     const formData = new FormData(updateExpenseForm);
                     const data = Object.fromEntries(formData.entries());
+                    const Toast = configureToast();
 
                     try {
                         const response = await fetch("/update_expenses", {
@@ -302,14 +351,28 @@
 
                         const result = await response.json();
                         if (result.success) {
-                            alert("Expense updated successfully!");
-                            location.reload();
+                            Toast.fire({
+                                icon: 'success',
+                                iconColor: '#27ae60',
+                                title: `Expense Updated`,
+                                html: `<div style="margin-top:8px;font-size:15px">Expense updated successfully!</div>`
+                            });
+                            setTimeout(() => location.reload(), 1500);
                         } else {
-                            alert("Error: " + result.message);
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `Update Failed`,
+                                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update expense."}</div>`
+                            });
                         }
                     } catch (error) {
-                        console.error("Error:", error);
-                        alert("Failed to update expense. Please try again.");
+                        Toast.fire({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: `System Error`,
+                            html: `<div style="margin-top:8px;font-size:15px">Failed to update expense. Please try again.</div>`
+                        });
                     }
                 });
 
@@ -324,6 +387,7 @@
                 // Confirm delete
                 document.getElementById("confirmDelete").addEventListener("click", async function () {
                     if (!currentDeleteId) return;
+                    const Toast = configureToast();
 
                     try {
                         const response = await fetch(`/delete_expenses/${currentDeleteId}`, {
@@ -333,14 +397,28 @@
 
                         const result = await response.json();
                         if (result.success) {
-                            alert("Expense deleted successfully!");
-                            location.reload();
+                            Toast.fire({
+                                icon: 'success',
+                                iconColor: '#27ae60',
+                                title: `Expense Deleted`,
+                                html: `<div style="margin-top:8px;font-size:15px">Expense deleted successfully!</div>`
+                            });
+                            setTimeout(() => location.reload(), 1500);
                         } else {
-                            alert("Error: " + result.message);
+                            Toast.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
+                                title: `Delete Failed`,
+                                html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete expense."}</div>`
+                            });
                         }
                     } catch (error) {
-                        console.error("Error:", error);
-                        alert("Failed to delete expense. Please try again.");
+                        Toast.fire({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: `System Error`,
+                            html: `<div style="margin-top:8px;font-size:15px">Failed to delete expense. Please try again.</div>`
+                        });
                     } finally {
                         deleteModal.hide();
                         currentDeleteId = null;
