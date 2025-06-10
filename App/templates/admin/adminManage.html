@@ -181,7 +181,31 @@
                 </div>
             </div>
 
+            <!-- Add SweetAlert2 CDN -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script>
+                // Toast configuration function (matching site_engineerManage.html)
+                function configureToast() {
+                    return Swal.mixin({
+                        toast: true,
+                        position: 'top',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        width: '380px',
+                        padding: '16px',
+                        background: '#fff',
+                        color: '#2c3e50',
+                        customClass: {
+                            timerProgressBar: 'swal2-timer-progress-bar-custom'
+                        },
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                }
+
                 document.addEventListener('DOMContentLoaded', () => {
                     const updateModal = document.getElementById('updateModal');
 
@@ -203,25 +227,97 @@
                             document.querySelector('#update_password').value = '';
                         }
                     });
-                });
-                document.addEventListener("DOMContentLoaded", function () {
-                    let selectedForm = null;
 
-                    // Attach event listeners to each delete button
+                    // --- DELETE LOGIC WITH TOAST ---
+                    let selectedForm = null;
                     document.querySelectorAll(".delete-button").forEach(button => {
                         button.addEventListener("click", function () {
-                            selectedForm = this.closest(".delete-form"); // Get the form of the clicked button
+                            selectedForm = this.closest(".delete-form");
                             let deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-                            deleteModal.show(); // Show Bootstrap Modal
+                            deleteModal.show();
                         });
                     });
 
-                    // If "Yes, Delete" is clicked, submit the selected form
-                    document.getElementById("confirmDelete").addEventListener("click", function () {
+                    document.getElementById("confirmDelete").addEventListener("click", async function () {
                         if (selectedForm) {
-                            selectedForm.submit();
+                            const Toast = configureToast();
+                            const action = selectedForm.getAttribute('action');
+                            try {
+                                const response = await fetch(action, {
+                                    method: "POST",
+                                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                                });
+                                let result = {};
+                                try { result = await response.json(); } catch { result = {}; }
+                                if (response.ok && (result.success === undefined || result.success)) {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        iconColor: '#27ae60',
+                                        title: `User Deleted`,
+                                        html: `<div style="margin-top:8px;font-size:15px">User deleted successfully!</div>`
+                                    });
+                                    setTimeout(() => window.location.reload(), 1200);
+                                } else {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `Delete Failed`,
+                                        html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete user."}</div>`
+                                    });
+                                }
+                            } catch (error) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `System Error`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Failed to delete user. Please try again.</div>`
+                                });
+                            }
                         }
                     });
+
+                    // --- UPDATE LOGIC WITH TOAST ---
+                    const updateForm = document.querySelector('#updateModal form');
+                    if (updateForm) {
+                        updateForm.addEventListener('submit', async function (e) {
+                            e.preventDefault();
+                            const Toast = configureToast();
+                            const formData = new FormData(updateForm);
+                            const data = Object.fromEntries(formData.entries());
+                            try {
+                                const response = await fetch(updateForm.getAttribute('action'), {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify(data)
+                                });
+                                let result = {};
+                                try { result = await response.json(); } catch { result = {}; }
+                                if (response.ok && (result.success === undefined || result.success)) {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        iconColor: '#27ae60',
+                                        title: `User Updated`,
+                                        html: `<div style="margin-top:8px;font-size:15px">User updated successfully!</div>`
+                                    });
+                                    setTimeout(() => window.location.reload(), 1200);
+                                } else {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        iconColor: '#e74c3c',
+                                        title: `Update Failed`,
+                                        html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update user."}</div>`
+                                    });
+                                }
+                            } catch (error) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    iconColor: '#e74c3c',
+                                    title: `System Error`,
+                                    html: `<div style="margin-top:8px;font-size:15px">Failed to update user. Please try again.</div>`
+                                });
+                            }
+                        });
+                    }
                 });
             </script>
 

@@ -184,49 +184,143 @@
     </div>
 </div>
 
-<!-- Scripts Update -->
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const updateModal = document.getElementById('UpdateModal');
-
-    updateModal.addEventListener('show.bs.modal', (event) => {
-        const button = event.relatedTarget;
-
-        if (button) {
-            // Extract info from data attributes
-            const userId = button.getAttribute('data-id');
-            const userName = button.getAttribute('data-name');
-            const userEmail = button.getAttribute('data-email');
-
-            // Populate the modal inputs
-            document.getElementById('labour_id').value = userId; // Fixed selector
-            document.querySelector('.labour_full_name').value = userName;
-            document.querySelector('.labour_email').value = userEmail;
-
-            // Leave the password field empty for security
-            document.querySelector('.labour_password').value = '';
-        }
-    });
-});
-document.addEventListener("DOMContentLoaded", function() {
-    let selectedForm = null;
-
-    // Attach event listeners to each delete button
-    document.querySelectorAll(".delete-button").forEach(button => {
-        button.addEventListener("click", function() {
-            selectedForm = this.closest(".delete-form"); // Get the form of the clicked button
-            let deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-            deleteModal.show(); // Show Bootstrap Modal
+    // Toast configuration function (matching site_engineerManage.html)
+    function configureToast() {
+        return Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
         });
-    });
+    }
 
-    // If "Yes, Delete" is clicked, submit the selected form
-    document.getElementById("confirmDelete").addEventListener("click", function() {
-        if (selectedForm) {
-            selectedForm.submit();
+    document.addEventListener('DOMContentLoaded', () => {
+        const updateModal = document.getElementById('UpdateModal');
+        updateModal.addEventListener('show.bs.modal', (event) => {
+            const button = event.relatedTarget;
+
+            if (button) {
+                // Extract info from data attributes
+                const userId = button.getAttribute('data-id');
+                const userName = button.getAttribute('data-name');
+                const userEmail = button.getAttribute('data-email');
+
+                // Populate the modal inputs
+                document.getElementById('labour_id').value = userId; // Fixed selector
+                document.querySelector('.labour_full_name').value = userName;
+                document.querySelector('.labour_email').value = userEmail;
+
+                // Leave the password field empty for security
+                document.querySelector('.labour_password').value = '';
+            }
+        });
+
+        // --- DELETE LOGIC WITH TOAST ---
+        let selectedForm = null;
+        document.querySelectorAll(".delete-button").forEach(button => {
+            button.addEventListener("click", function () {
+                selectedForm = this.closest(".delete-form");
+                let deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+                deleteModal.show();
+            });
+        });
+
+        document.getElementById("confirmDelete").addEventListener("click", async function () {
+            if (selectedForm) {
+                const Toast = configureToast();
+                const action = selectedForm.getAttribute('action');
+                try {
+                    const response = await fetch(action, {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                    let result = {};
+                    try { result = await response.json(); } catch { result = {}; }
+                    if (response.ok && (result.success === undefined || result.success)) {
+                        Toast.fire({
+                            icon: 'success',
+                            iconColor: '#27ae60',
+                            title: `User Deleted`,
+                            html: `<div style="margin-top:8px;font-size:15px">User deleted successfully!</div>`
+                        });
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        Toast.fire({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: `Delete Failed`,
+                            html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to delete user."}</div>`
+                        });
+                    }
+                } catch (error) {
+                    Toast.fire({
+                        icon: 'error',
+                        iconColor: '#e74c3c',
+                        title: `System Error`,
+                        html: `<div style="margin-top:8px;font-size:15px">Failed to delete user. Please try again.</div>`
+                    });
+                }
+            }
+        });
+
+        // --- UPDATE LOGIC WITH TOAST ---
+        const updateForm = document.querySelector('#UpdateModal form');
+        if (updateForm) {
+            updateForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const Toast = configureToast();
+                const formData = new FormData(updateForm);
+                const data = Object.fromEntries(formData.entries());
+                try {
+                    const response = await fetch(updateForm.getAttribute('action'), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                    let result = {};
+                    try { result = await response.json(); } catch { result = {}; }
+                    if (response.ok && (result.success === undefined || result.success)) {
+                        Toast.fire({
+                            icon: 'success',
+                            iconColor: '#27ae60',
+                            title: `User Updated`,
+                            html: `<div style="margin-top:8px;font-size:15px">User updated successfully!</div>`
+                        });
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        Toast.fire({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: `Update Failed`,
+                            html: `<div style="margin-top:8px;font-size:15px">${result.message || "Failed to update user."}</div>`
+                        });
+                    }
+                } catch (error) {
+                    Toast.fire({
+                        icon: 'error',
+                        iconColor: '#e74c3c',
+                        title: `System Error`,
+                        html: `<div style="margin-top:8px;font-size:15px">Failed to update user. Please try again.</div>`
+                    });
+                }
+            });
         }
     });
-});
 </script>
 
 {% endblock %}

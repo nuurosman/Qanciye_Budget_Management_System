@@ -1,12 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
     const registrationForm = document.getElementById("registrationForm");
 
+    // Toast configuration function (matching attendance toast)
+    function configureToast() {
+        return Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            width: '380px',
+            padding: '16px',
+            background: '#fff',
+            color: '#2c3e50',
+            customClass: {
+                timerProgressBar: 'swal2-timer-progress-bar-custom'
+            },
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+    }
+
     registrationForm.addEventListener("submit", async (event) => {
         event.preventDefault(); // Prevent default form submission
 
         // Gather form data
         const formData = new FormData(registrationForm);
         const data = Object.fromEntries(formData);
+
+        const Toast = configureToast();
 
         try {
             const response = await fetch("/register", {
@@ -20,14 +44,29 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
 
             if (result.success) {
-                alert(result.message);
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `Registration Successful`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "User registered successfully!"}</div>`
+                });
                 registrationForm.reset(); // Reset the form
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Registration Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Registration failed."}</div>`
+                });
             }
         } catch (error) {
             console.error("Registration Error:", error);
-            alert("An error occurred during registration.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">An error occurred during registration.</div>`
+            });
         }
     });
 });
@@ -43,6 +82,8 @@ editForms.forEach((form) => {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
 
+        const Toast = configureToast();
+
         try {
             const response = await fetch(`/edit/${userId}`, {
                 method: 'POST',
@@ -55,14 +96,29 @@ editForms.forEach((form) => {
             const result = await response.json();
 
             if (result.success) {
-                alert("User updated successfully!");
-                window.location.reload();
+                Toast.fire({
+                    icon: 'success',
+                    iconColor: '#27ae60',
+                    title: `User Updated`,
+                    html: `<div style="margin-top:8px;font-size:15px">User updated successfully!</div>`
+                });
+                setTimeout(() => window.location.reload(), 1500);
             } else {
-                alert("Error: " + result.message);
+                Toast.fire({
+                    icon: 'error',
+                    iconColor: '#e74c3c',
+                    title: `Update Failed`,
+                    html: `<div style="margin-top:8px;font-size:15px">${result.message || "Update failed."}</div>`
+                });
             }
         } catch (error) {
             console.error("Edit Error:", error);
-            alert("An error occurred while editing the user.");
+            Toast.fire({
+                icon: 'error',
+                iconColor: '#e74c3c',
+                title: `System Error`,
+                html: `<div style="margin-top:8px;font-size:15px">An error occurred while editing the user.</div>`
+            });
         }
     });
 });

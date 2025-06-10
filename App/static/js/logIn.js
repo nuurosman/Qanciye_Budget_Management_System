@@ -23,6 +23,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (result.success) {
                 errorMessage.style.display = "none";
+                
+                // Show success toast before redirecting
+                await Swal.fire({
+                    title: 'Login Successful',
+                    text: `Welcome back, ${data.email.split('@')[0]}!`,
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    position: 'top-end',
+                    toast: true,
+                    background: 'white',
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+                
+                // Redirect after toast disappears
                 window.location.href = result.redirect_url;
             } else {
                 errorMessage.style.display = "block";
@@ -34,24 +55,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
 function show_password(){
-    const passwordfield=document.getElementById('password');
-    const passwordIcon=document.getElementById('passwordIcon');
+    const passwordfield = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
 
-    if(passwordfield.type ==='password'){
-        passwordfield.type='text';
-        passwordIcon.classList.remove('bi bi-eye-fill');
+    if(passwordfield.type === 'password'){
+        passwordfield.type = 'text';
+        passwordIcon.classList.remove('bi', 'bi-eye-fill');
         passwordIcon.classList.add('bi-eye-slash-fill');
     }
     else{
-        passwordfield.type='password';
-        passwordIcon.classList.remove('bi-eye-slash-fill')
-        passwordfield.classList.add('bi bi-eye-fill')
+        passwordfield.type = 'password';
+        passwordIcon.classList.remove('bi-eye-slash-fill');
+        passwordIcon.classList.add('bi', 'bi-eye-fill');
     }
-
-    }
-
+}
 
 // document.addEventListener("DOMContentLoaded", () => {
 //     const loginForm = document.getElementById("loginForm");
