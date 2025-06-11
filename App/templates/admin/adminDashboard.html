@@ -1,9 +1,22 @@
 {% extends '/admin/base.html' %}
 
+{% block breadcrumbs %}
+<div class="container-lg  ">
+<nav aria-label="breadcrumb" class="mt-5 me-5">
+  <ol class="breadcrumb bg-light px-3 py-2 rounded align-items-center" style="margin-bottom: 0;">
+    <li class="breadcrumb-item active d-flex align-items-center justify-content-center aria-current="page">
+      <i class="bi bi-house-door-fill me-1  fs-3  " style="margin-left: 1rem;"></i>
+       <h2 class="fw-bold fs-3 mt-2 ">Admin Dashboard</h2>
+    </li>
+  </ol>
+</nav>
+</div>
+{% endblock %}
+
 {% block content%}
-<div class="container">
+<div class="container-lg justify-content-center mt- 3">
   <div class="page-inner">
-    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+    <!-- <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
       <div>
         <h3 class="fw-bold mb-3">Dashboard</h3>
       </div>
@@ -11,88 +24,258 @@
         <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
         <a href="#" class="btn btn-primary btn-round">Add Customer</a>
       </div>
-    </div>
+    </div>  -->
     <!-- ============================================================================== -->
-    <h1>Welcome to the Admin Dashboard</h1>
-    <div class="row">
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-primary bubble-shadow-small">
-                  <i class="fas fa-users"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Labourers Assigned to Projects</p>
-                  <h4 class="card-title">{{ labourers_assigned_count }}</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-info bubble-shadow-small">
-                  <i class="fas fa-project-diagram"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Total Projects</p>
-                  <h4 class="card-title">{{ total_projects_count }}</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-success bubble-shadow-small">
-                  <i class="fas fa-user-tie"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Admins Assigned to Projects</p>
-                  <h4 class="card-title">{{ admins_assigned_count }}</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-secondary bubble-shadow-small">
-                  <i class="fas fa-hard-hat"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Total Site Engineers</p>
-                  <h4 class="card-title">{{ total_site_engineers_count }}</h4>
-                </div>
-              </div>
-            </div>
-          </div>
+<div class="row">
+  <!-- Total Admins -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-person-fill fs-2 position-absolute top-0 start-0 m-3"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ total_admins_count }}</h1>
+          <p class="text-white mb-0">Total Admins</p>
         </div>
       </div>
     </div>
-    
+  </div>
+
+  <!-- Total Projects -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-secondary bg-purple bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-kanban-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ total_projects_count }}</h1>
+          <p class="text-white mb-0">Total Projects</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Labourers -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-info bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-people-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ total_labourers_count }}</h1>
+          <p class="text-white mb-0">Total Labourers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Logs -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-secondary bg-success bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-calendar-check-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ attendance_logs_count }}</h1>
+          <p class="text-white mb-0">Attendance Logs</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <!-- Ongoing Tasks -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-list-task fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ ongoing_tasks_count }}</h1>
+          <p class="text-white mb-0">Ongoing Tasks</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Expenses -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-secondary bg-danger bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-cash-stack fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ total_expenses_count }}</h1>
+          <p class="text-white mb-0">Total Expenses</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Material Entries -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-info bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-box-seam-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ material_entries_count }}</h1>
+          <p class="text-white mb-0">Material Entries</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payments Made -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-secondary bg-warning bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-credit-card-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ payments_made_count }}</h1>
+          <p class="text-white mb-0">Payments Made</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Site Engineers -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-dark bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-person-workspace fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ total_site_engineers_count }}</h1>
+          <p class="text-white mb-0">Site Engineers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Labours Assigned to Projects -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-primary bg-secondary bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-person-check-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ labours_assigned_to_projects_count }}</h1>
+          <p class="text-white mb-0">Project Labourers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Engineers Assigned to Projects -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-secondary bg-indigo bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-person-workspace fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ site_engineers_assigned_to_projects_count }}</h1>
+          <p class="text-white mb-0">Project Engineers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Tasks -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-success bg-success bg-gradient bubble-shadow-small">
+      <div class="card-body bubble-shadow position-relative">
+        <i class="bi bi-check-circle-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">{{ completed_tasks_count }}</h1>
+          <p class="text-white mb-0">Completed Tasks</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+   <div class="row">
+              <div class="col-md-8">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-head-row">
+                      <div class="card-title">User Statistics</div>
+                      <div class="card-tools">
+                        <a
+                          href="#"
+                          class="btn btn-label-success btn-round btn-sm me-2"
+                        >
+                          <span class="btn-label">
+                            <i class="fa fa-pencil"></i>
+                          </span>
+                          Export
+                        </a>
+                        <a href="#" class="btn btn-label-info btn-round btn-sm">
+                          <span class="btn-label">
+                            <i class="fa fa-print"></i>
+                          </span>
+                          Print
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="chart-container" style="min-height: 375px">
+                      <canvas id="statisticsChart"></canvas>
+                    </div>
+                    <div id="myChartLegend"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card card-primary">
+                  <div class="card-header">
+                    <div class="card-head-row">
+                      <div class="card-title">Daily Sales</div>
+                      <div class="card-tools">
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-label-light dropdown-toggle"
+                            type="button"
+                            id="dropdownMenuButton"
+                            data-bs-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                          >
+                            Export
+                          </button>
+                          <div
+                            class="dropdown-menu"
+                            aria-labelledby="dropdownMenuButton"
+                          >
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#"
+                              >Something else here</a
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-category">March 25 - April 02</div>
+                  </div>
+                  <div class="card-body pb-0">
+                    <div class="mb-4 mt-2">
+                      <h1>$4,578.58</h1>
+                    </div>
+                    <div class="pull-in">
+                      <canvas id="dailySalesChart"></canvas>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-body pb-0">
+                    <div class="h1 fw-bold float-end text-primary">+5%</div>
+                    <h2 class="mb-2">17</h2>
+                    <p class="text-muted">Users online</p>
+                    <div class="pull-in sparkline-fix">
+                      <div id="lineChart"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
   </div>
 </div>
 {% endblock %}

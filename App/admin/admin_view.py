@@ -65,27 +65,128 @@ def get_total_site_engineers_count():
     return len(site_engineers) if success else 0
 
 # Admin Dashboard
+
+def get_total_admins_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM admin")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_total_projects_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM projects")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_total_labourers_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM labour")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_attendance_logs_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM attendance")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_ongoing_tasks_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM projects WHERE status = 'ongoing'")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_completed_tasks_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM projects WHERE status = 'completed'")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_total_expenses_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM expenses")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_material_entries_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM materials")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_payments_made_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM payments")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_total_site_engineers_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM site_engineer")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_labours_assigned_to_projects_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(DISTINCT labour_id) FROM labour_project")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+
+def get_site_engineers_assigned_to_projects_count():
+    cursor = adminmodel.connection.cursor()
+    cursor.execute("SELECT COUNT(DISTINCT site_engineer_id) FROM projects WHERE site_engineer_id IS NOT NULL")
+    count = cursor.fetchone()[0]
+    cursor.close()
+    return count
+# Admin Dashboard
 @app.route('/admin/dashboard')
 def dashboard():
     user = session.get('user')  # Retrieve the user data from the session
     if not user or user.get('user_type') != 'admin':  # Check if user is logged in and an admin
         return redirect('/login')  # Redirect to login if not authenticated
 
-    # Fetch counts
-    labourers_assigned_count = get_labourers_assigned_count()
+    # Fetch all counts
+    ongoing_tasks_count = get_ongoing_tasks_count()
+    completed_tasks_count = get_completed_tasks_count()
+    total_admins_count = get_total_admins_count()
     total_projects_count = get_total_projects_count()
-    admins_assigned_count = get_admins_assigned_count()
+    total_labourers_count = get_total_labourers_count()
+    attendance_logs_count = get_attendance_logs_count()
+    total_expenses_count = get_total_expenses_count()
+    material_entries_count = get_material_entries_count()
+    payments_made_count = get_payments_made_count()
     total_site_engineers_count = get_total_site_engineers_count()
+    # Add new counts
+    labours_assigned_to_projects_count = get_labours_assigned_to_projects_count()
+    site_engineers_assigned_to_projects_count = get_site_engineers_assigned_to_projects_count()
 
     email = user.get('email')
 
     return render_template('/admin/adminDashboard.html', 
-                           labourers_assigned_count=labourers_assigned_count,
+                           total_admins_count=total_admins_count,
                            total_projects_count=total_projects_count,
-                           admins_assigned_count=admins_assigned_count,
-                           total_site_engineers_count=total_site_engineers_count)
-
-
+                           total_labourers_count=total_labourers_count,
+                           attendance_logs_count=attendance_logs_count,
+                           total_expenses_count=total_expenses_count,
+                           material_entries_count=material_entries_count,
+                           payments_made_count=payments_made_count,
+                           total_site_engineers_count=total_site_engineers_count,
+                           labours_assigned_to_projects_count=labours_assigned_to_projects_count,
+                           site_engineers_assigned_to_projects_count=site_engineers_assigned_to_projects_count,
+                            ongoing_tasks_count=ongoing_tasks_count,
+                        completed_tasks_count=completed_tasks_count)
+# Admin Dashboard End    
 
 
 # Admins Management
@@ -1458,4 +1559,4 @@ def reset_password(token):
         return redirect(url_for('login_page'))  # Make sure you have a login route
 
     return render_template('admin/reset_password.html', token=token)
-    
+

@@ -99,6 +99,8 @@ class AdminModel:
         except Exception as e:
             print(f"Authentication error: {e}")
             return False, "An internal error occurred during authentication."
+    
+    
 
     # Get all the site Engineers
     def get_all_siteEngineers(self):

@@ -1,5 +1,17 @@
 {% extends '/admin/base.html' %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mt-3">
+  <ol class="breadcrumb bg-light px-3 py-2 rounded align-items-center" style="margin-bottom: 0;">
+    <li class="breadcrumb-item d-flex align-items-center">
+      <a href="{{ url_for('dashboard') }}" class="d-flex align-items-center text-decoration-none">
+        <i class="bi bi-house-door-fill me-1"></i> Home
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Site Engineer Management</li>
+  </ol>
+</nav>
+{% endblock %}
 
 {% block content%}
 

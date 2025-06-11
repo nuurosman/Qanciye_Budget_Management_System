@@ -17,7 +17,8 @@
   <!-- External Fonts and Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
- 
+  
+
 
   <!-- Web Font Loader -->
   <script src="{{ url_for('static', filename='js/plugin/webfont/webfont.min.js') }}"></script>
@@ -478,16 +479,7 @@
         <!-- Navbar Header -->
         <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
           <div class="container-fluid">
-            <!-- <nav class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <button type="submit" class="btn btn-search pe-1">
-                    <i class="bi bi-search"></i>
-                  </button>
-                </div>
-                <input type="text" placeholder="Search ..." class="form-control" />
-              </div>
-            </nav> -->
+
 
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
               <li class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none">
@@ -711,6 +703,14 @@
 </div>
       <!-- Content section -->
       <div class="container">
+        {% block breadcrumbs %}
+        <!-- Default breadcrumb: can be overridden in child templates -->
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-light d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+            <li class="breadcrumb-item active" aria-current="page"></li>
+          </ol>
+        </nav>
+        {% endblock %}
         {% block content %}
         {% endblock %}
       </div>
