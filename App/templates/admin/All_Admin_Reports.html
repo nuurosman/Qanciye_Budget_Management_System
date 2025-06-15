@@ -1,0 +1,829 @@
+{% extends '/admin/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Dashboard Cards -->
+    <div class="row">
+        <!-- Total Budget -->
+        <div class="col-md-3 mb-4">
+            <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
+                <div class="card-body bubble-shadow position-relative">
+                    <i class="bi bi-currency-dollar fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+                    <div class="text-center mt-5 pt-2">
+                        <h1 class="display-5 text-white">
+                            {% if selected_project %}
+                                {{ "%.2f"|format(selected_project.total_budget) }}
+                            {% else %}
+                                {{ "%.2f"|format(projects|sum(attribute='total_budget')) }}
+                            {% endif %}
+                        </h1>
+                        <p class="text-white mb-0">Total Budget</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remaining Budget -->
+        <div class="col-md-3 mb-4">
+            <div class="card card-success bg-success bg-gradient bubble-shadow-small">
+                <div class="card-body bubble-shadow position-relative">
+                    <i class="bi bi-wallet2 fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+                    <div class="text-center mt-5 pt-2">
+                        <h1 class="display-5 text-white">
+                            {% if selected_project %}
+                                {{ "%.2f"|format(selected_project.remaining_budget) }}
+                            {% else %}
+                                {{ "%.2f"|format(projects|sum(attribute='remaining_budget')) }}
+                            {% endif %}
+                        </h1>
+                        <p class="text-white mb-0">Remaining Budget</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Used Budget -->
+        <div class="col-md-3 mb-4">
+            <div class="card card-warning bg-warning bg-gradient bubble-shadow-small">
+                <div class="card-body bubble-shadow position-relative">
+                    <i class="bi bi-cash-stack fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+                    <div class="text-center mt-5 pt-2">
+                        <h1 class="display-5 text-white">
+                            {% if selected_project %}
+                                {{ "%.2f"|format(selected_project.used_budget) }}
+                            {% else %}
+                                {{ "%.2f"|format(projects|sum(attribute='used_budget')) }}
+                            {% endif %}
+                        </h1>
+                        <p class="text-white mb-0">Used Budget</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ongoing Projects -->
+        <div class="col-md-3 mb-4">
+            <div class="card card-info bg-info bg-gradient bubble-shadow-small">
+                <div class="card-body bubble-shadow position-relative">
+                    <i class="bi bi-building fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+                    <div class="text-center mt-5 pt-2">
+                        <h1 class="display-5 text-white">
+                            {{ projects|selectattr('status', 'equalto', 'ongoing')|list|length }}
+                        </h1>
+                        <p class="text-white mb-0">Ongoing Projects</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="reportForm" method="GET" action="{{ url_for('admin_reports') }}">
+                        <div class="row">
+                            <!-- Site Engineer Selection -->
+             <!-- Site Engineer Selection -->
+<!-- Site Engineer Selection -->
+<div class="col-md-3 mb-3">
+    <label class="form-label">Site Engineer</label>
+    <select class="form-select" name="site_engineer_id" id="engineerSelect">
+        <option value="all" {% if site_engineer_id=='all' %}selected{% endif %}>
+            All Engineers
+        </option>
+        {% for engineer in site_engineers %}
+        <option value="{{ engineer.site_engineer_id }}" 
+                {% if site_engineer_id==engineer.site_engineer_id|string %}selected{% endif %}>
+            {{ engineer.full_name }} 
+        </option>
+        {% endfor %}
+    </select>
+</div>               <!-- Project Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Project</label>
+                                <select class="form-select" name="project_id" id="projectSelect">
+                                    <option value="all" {% if not project_id or project_id=='all' %}selected{% endif %}>
+                                        All Projects
+                                    </option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.project_id }}" {% if project_id==project.project_id|string %}selected{% endif %}>
+                                        {{ project.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Report Type Selection -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Report Type</label>
+                                <select class="form-select" name="report_type" id="reportType">
+                                    <option value="budget" {% if report_type=='budget' %}selected{% endif %}>Budget Summary</option>
+                                    <option value="wages" {% if report_type=='wages' %}selected{% endif %}>Wages</option>
+                                    <option value="material" {% if report_type=='material' %}selected{% endif %}>Materials</option>
+                                    <option value="expense" {% if report_type=='expense' %}selected{% endif %}>Expenses</option>
+                                    <option value="attendance" {% if report_type=='attendance' %}selected{% endif %}>Attendance</option>
+                                    <option value="labour" {% if report_type=='labour' %}selected{% endif %}>Labour</option>
+                                    <option value="payments" {% if report_type=='payments' %}selected{% endif %}>Payments</option>
+                                    <option value="engineers" {% if report_type=='engineers' %}selected{% endif %}>Engineers</option>
+                                    <option value="budget_tracking" {% if report_type=='budget_tracking' %}selected{% endif %}>Budget Tracking</option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-md-3 mb-3" id="statusFilterContainer" style="display: {% if report_type in ['wages', 'material', 'expense'] %}block{% else %}none{% endif %};">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" name="status" id="statusFilter">
+                                    <option value="all" {% if not status_filter or status_filter=='all' %}selected{% endif %}>All Statuses</option>
+                                    <option value="paid" {% if status_filter=='paid' %}selected{% endif %}>Paid</option>
+                                    <option value="pending" {% if status_filter=='pending' %}selected{% endif %}>Pending</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Date Range Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date Range</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" name="start_date" id="startDate" value="{{ start_date|default('') }}">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" name="end_date" id="endDate" value="{{ end_date|default('') }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3 d-flex align-items-end">
+                                <div class="btn-group w-100">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setDateRange('today')">Today</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setDateRange('week')">This Week</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setDateRange('month')">This Month</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setDateRange('year')">This Year</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12 d-flex justify-content-end">
+                                <!-- Generate Report Button -->
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Generate Report
+                                </button>
+
+                                <!-- Print Button -->
+                                <button type="button" id="printReport" class="btn btn-secondary me-2" title="Print Report">
+                                    <i class="bi bi-printer me-1"></i> Print
+                                </button>
+
+                                <!-- Export Dropdown -->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-download me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-earmark-pdf me-2"></i> PDF</a></li>
+                                        <li><a class="dropdown-item" href="#" id="exportExcel"><i class="bi bi-file-earmark-excel me-2"></i> Excel</a></li>
+                                        <li><a class="dropdown-item" href="#" id="exportCSV"><i class="bi bi-file-earmark-text me-2"></i> CSV</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Results -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        {% if selected_project %}
+                            {{ report_type|title }} Report for {{ selected_project.name }}
+                        {% elif selected_engineer %}
+                            {{ report_type|title }} Report for Engineer {{ selected_engineer.full_name }}
+                        {% else %}
+                            {{ report_type|title }} Report for All Projects
+                        {% endif %}
+                    </h4>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {% if start_date and end_date %}
+                            {{ start_date }} to {{ end_date }}
+                        {% else %}
+                            All Dates
+                        {% endif %}
+                        {% if status_filter != 'all' %}
+                            | Status: {{ status_filter|title }}
+                        {% endif %}
+                    </h6>
+
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        {% if report_type == 'budget' %}
+                            <!-- Budget Summary Table -->
+                            <table id="reportTable" class="table table-bordered table-hover">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Project Name</th>
+                                        <th>Total Budget</th>
+                                        <th>Used Budget</th>
+                                        <th>Remaining Budget</th>
+                                        <th>Status</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Site Engineer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in report_data %}
+                                    <tr>
+                                        <td>{{ project.name }}</td>
+                                        <td>{{ "%.2f"|format(project.total_budget) }}</td>
+                                        <td>{{ "%.2f"|format(project.used_budget) }}</td>
+                                        <td>{{ "%.2f"|format(project.remaining_budget) }}</td>
+                                        <td>{{ project.status }}</td>
+                                        <td>{{ project.start_date.strftime('%Y-%m-%d') if project.start_date else 'N/A' }}</td>
+                                        <td>{{ project.end_date.strftime('%Y-%m-%d') if project.end_date else 'N/A' }}</td>
+                                        <td>{{ project.site_engineer.full_name if project.site_engineer else 'N/A' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center">No projects found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        
+                      {% elif report_type == 'wages' %}
+    <!-- Wages Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Labour Name</th>
+                <th>Project</th>
+                <th>Daily Rate</th>
+                <th>Total Days</th>
+                <th>Total Wage</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Site Engineer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for wage in report_data %}
+            <tr>
+                <td>{{ wage.labour_name if wage.labour_name else 'N/A' }}</td>
+                <td>{{ wage.project_name if wage.project_name else 'N/A' }}</td>
+                <td>{{ "%.2f"|format(wage.daily_rate) }}</td>
+                <td>{{ wage.total_days }}</td>
+                <td>{{ "%.2f"|format(wage.total_wage) }}</td>
+                <td>{{ wage.created_at.strftime('%Y-%m-%d') if wage.created_at else 'N/A' }}</td>
+                <td>{{ 'Paid' if wage.is_paid else 'Pending' }}</td>
+                <td>
+                    {{ wage.site_engineer_name if wage.site_engineer_name else 'N/A' }}
+                    {% if wage.site_engineer_email %}
+                        <br><small class="text-muted">{{ wage.site_engineer_email }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No wage records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="4" class="text-right"><strong>Total:</strong></td>
+                <td><strong>{{ "%.2f"|format(totals.amount) }}</strong></td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+                        
+                     {% elif report_type == 'material' %}
+    <!-- Materials Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Item Name</th>
+                <th>Project</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Site Engineer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in report_data %}
+            <tr>
+                <td>{{ material.item_name }}</td>
+                <td>{{ material.project_name if material.project_name else 'N/A' }}</td>
+                <td>{{ material.quantity }}</td>
+                <td>{{ "%.2f"|format(material.unit_price) }}</td>
+                <td>{{ "%.2f"|format(material.amount) }}</td>
+                <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else 'N/A' }}</td>
+                <td>{{ 'Paid' if material.is_paid else 'Pending' }}</td>
+                <td>
+                    {{ material.site_engineer_name if material.site_engineer_name else 'N/A' }}
+                    {% if material.site_engineer_email %}
+                        <br><small class="text-muted">{{ material.site_engineer_email }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No material records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="4" class="text-right"><strong>Total:</strong></td>
+                <td><strong>{{ "%.2f"|format(totals.amount) }}</strong></td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+                        
+                       {% elif report_type == 'expense' %}
+    <!-- Expenses Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Item Name</th>
+                <th>Project</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Expense Type</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Site Engineer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in report_data %}
+            <tr>
+                <td>{{ expense.item_name }}</td>
+                <td>{{ expense.project_name if expense.project_name else 'N/A' }}</td>
+                <td>{{ "%.2f"|format(expense.amount) }}</td>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.expense_type }}</td>
+                <td>{{ expense.created_at.strftime('%Y-%m-%d') if expense.created_at else 'N/A' }}</td>
+                <td>{{ 'Paid' if expense.is_paid else 'Pending' }}</td>
+                <td>
+                    {{ expense.site_engineer_name if expense.site_engineer_name else 'N/A' }}
+                    {% if expense.site_engineer_email %}
+                        <br><small class="text-muted">{{ expense.site_engineer_email }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No expense records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                <td><strong>{{ "%.2f"|format(totals.amount) }}</strong></td>
+                <td colspan="5"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+                     {% elif report_type == 'attendance' %}
+    <!-- Attendance Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Labour Name</th>
+                <th>Project</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Paid</th>
+                <th>Recorded By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in report_data %}
+            <tr>
+                <td>{{ attendance.labour_name if attendance.labour_name else 'N/A' }}</td>
+                <td>{{ attendance.project_name if attendance.project_name else 'N/A' }}</td>
+                <td>{{ attendance.date.strftime('%Y-%m-%d') if attendance.date else 'N/A' }}</td>
+                <td>{{ attendance.status }}</td>
+                <td>{{ 'Yes' if attendance.is_paid else 'No' }}</td>
+                <td>
+                    {{ attendance.site_engineer_name if attendance.site_engineer_name else 'N/A' }}
+                    {% if attendance.site_engineer_email %}
+                        <br><small class="text-muted">{{ attendance.site_engineer_email }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">No attendance records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="2" class="text-right"><strong>Total Records:</strong></td>
+                <td><strong>{{ totals.count }}</strong></td>
+                <td class="text-right"><strong>Paid:</strong></td>
+                <td><strong>{{ totals.paid }}</strong></td>
+                <td class="text-right"><strong>Pending:</strong></td>
+                <td><strong>{{ totals.pending }}</strong></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+
+             {% elif report_type == 'labour' %}
+    <!-- Labour Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Labour Name</th>
+                <th>Contact</th>
+                <th>Type of Work</th>
+                <th>Assigned Project</th>
+                <th>Daily Rate</th>
+                <th>Assigned Since</th>
+                <th>Assigned By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for labour in report_data %}
+            <tr>
+                <td>{{ labour.full_name }}</td>
+                <td>
+                    {{ labour.phone if labour.phone else 'N/A' }}
+                    {% if labour.email %}
+                        <br><small class="text-muted">{{ labour.email }}</small>
+                    {% endif %}
+                </td>
+                <td>{{ labour.type_of_work if labour.type_of_work else 'N/A' }}</td>
+                <td>{{ labour.project_name if labour.project_name else 'Not Assigned' }}</td>
+                <td>{{ "%.2f"|format(labour.daily_rate) if labour.daily_rate else 'N/A' }}</td>
+                <td>{{ labour.assigned_date.strftime('%Y-%m-%d') if labour.assigned_date else 'N/A' }}</td>
+                <td>
+                    {{ labour.site_engineer_name if labour.site_engineer_name else 'N/A' }}
+                    {% if labour.site_engineer_email %}
+                        <br><small class="text-muted">{{ labour.site_engineer_email }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">No labour records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="6" class="text-right"><strong>Total Labours:</strong></td>
+                <td><strong>{{ totals.count }}</strong></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+                            
+                        {% elif report_type == 'payments' %}
+                            <!-- Payments Report Table -->
+                            <table id="reportTable" class="table table-bordered table-hover">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Payment ID</th>
+                                        <th>Project</th>
+                                        <th>Amount</th>
+                                        <th>Payment Type</th>
+                                        <th>Payment Method</th>
+                                        <th>Date</th>
+                                        <th>Recorded By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in report_data %}
+                                    <tr>
+                                        <td>{{ payment.payment_id }}</td>
+                                        <td>{{ payment.project.name if payment.project else 'N/A' }}</td>
+                                        <td>{{ "%.2f"|format(payment.amount) }}</td>
+                                        <td>{{ payment.payment_type }}</td>
+                                        <td>{{ payment.payment_method }}</td>
+                                        <td>{{ payment.payment_date.strftime('%Y-%m-%d') if payment.payment_date else 'N/A' }}</td>
+                                        <td>{{ payment.site_engineer.full_name if payment.site_engineer else 'N/A' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No payment records found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                {% if report_data %}
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                                        <td><strong>{{ "%.2f"|format(totals.amount) }}</strong></td>
+                                        <td colspan="4"></td>
+                                    </tr>
+                                </tfoot>
+                                {% endif %}
+                            </table>
+                            
+                        {% elif report_type == 'engineers' %}
+                            <!-- Engineers Report Table -->
+                            <table id="reportTable" class="table table-bordered table-hover">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Engineer Name</th>
+                                        <th>Contact</th>
+                                        <th>Email</th>
+                                        <th>Assigned Projects</th>
+                                        <th>Active Since</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for engineer in report_data %}
+                                    <tr>
+                                        <td>{{ engineer.full_name }}</td>
+                                        <td>{{ engineer.phone }}</td>
+                                        <td>{{ engineer.email }}</td>
+                                        <td>{{ engineer.projects|length }}</td>
+                                        <td>{{ engineer.created_at.strftime('%Y-%m-%d') if engineer.created_at else 'N/A' }}</td>
+                                        <td>{{ 'Active' if engineer.is_active else 'Inactive' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">No engineer records found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                {% if report_data %}
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <td colspan="3" class="text-right"><strong>Total Engineers:</strong></td>
+                                        <td><strong>{{ totals.count }}</strong></td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                                {% endif %}
+                            </table>
+                            
+                        {% elif report_type == 'budget_tracking' %}
+                            <!-- Budget Tracking Report Table -->
+                            <table id="reportTable" class="table table-bordered table-hover">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Project</th>
+                                        <th>Date</th>
+                                        <th>Transaction Type</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Recorded By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for track in report_data %}
+                                    <tr>
+                                        <td>{{ track.project.name if track.project else 'N/A' }}</td>
+                                        <td>{{ track.tracking_date.strftime('%Y-%m-%d') if track.tracking_date else 'N/A' }}</td>
+                                        <td>{{ track.transaction_type }}</td>
+                                        <td>{{ "%.2f"|format(track.amount) }}</td>
+                                        <td>{{ track.description }}</td>
+                                        <td>{{ track.site_engineer.full_name if track.site_engineer else 'N/A' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">No budget tracking records found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                {% if report_data %}
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <td colspan="3" class="text-right"><strong>Total Records:</strong></td>
+                                        <td><strong>{{ totals.count }}</strong></td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                                {% endif %}
+                            </table>
+                            {% elif report_type == 'labour' %}
+    <!-- Labour Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Labour Name</th>
+                <th>Contact</th>
+                <th>Assigned Project</th>
+                <th>Daily Rate</th>
+                <th>Assigned Since</th>
+                <th>Assigned By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for labour in report_data %}
+            <tr>
+                <td>{{ labour.full_name }}</td>
+                <td>{{ labour.phone }}</td>
+                <td>{{ labour.project_name if labour.project_name else 'Not Assigned' }}</td>
+                <td>{{ "%.2f"|format(labour.daily_rate) if labour.daily_rate else '0.00' }}</td>
+                <td>{{ labour.assigned_date.strftime('%Y-%m-%d') if labour.assigned_date else 'N/A' }}</td>
+                <td>{{ labour.site_engineer_name if labour.site_engineer_name else 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">No labour records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="5" class="text-right"><strong>Total Labours:</strong></td>
+                <td><strong>{{ totals.count }}</strong></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+    
+{% elif report_type == 'attendance' %}
+    <!-- Attendance Report Table -->
+    <table id="reportTable" class="table table-bordered table-hover">
+        <thead class="sticky-top bg-light">
+            <tr>
+                <th>Labour Name</th>
+                <th>Project</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Recorded By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in report_data %}
+            <tr>
+                <td>{{ attendance.labour_name if attendance.labour_name else 'N/A' }}</td>
+                <td>{{ attendance.project_name if attendance.project_name else 'N/A' }}</td>
+                <td>{{ attendance.date.strftime('%Y-%m-%d') if attendance.date else 'N/A' }}</td>
+                <td>{{ attendance.status }}</td>
+                <td>{{ attendance.site_engineer_name if attendance.site_engineer_name else 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">No attendance records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if report_data %}
+        <tfoot>
+            <tr class="table-info">
+                <td colspan="2" class="text-right"><strong>Total Records:</strong></td>
+                <td><strong>{{ totals.count }}</strong></td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Report Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide status filter based on report type
+    const reportTypeSelect = document.getElementById('reportType');
+    const statusFilterContainer = document.getElementById('statusFilterContainer');
+    
+    reportTypeSelect.addEventListener('change', function() {
+        const selectedType = this.value;
+        if (['wages', 'material', 'expense'].includes(selectedType)) {
+            statusFilterContainer.style.display = 'block';
+        } else {
+            statusFilterContainer.style.display = 'none';
+        }
+    });
+    
+    // Print Report (print only the report table)
+    document.getElementById('printReport').addEventListener('click', function() {
+        let printContents = document.getElementById('reportTable').outerHTML;
+        let printWindow = window.open('', '', 'height=600,width=900');
+        printWindow.document.write('<html><head><title>Print Report</title>');
+        printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContents);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(function() {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+    });
+
+    // Export to Excel and open automatically
+    document.getElementById('exportExcel').addEventListener('click', function(e) {
+        e.preventDefault();
+        let table = document.getElementById('reportTable');
+        let html = table.outerHTML.replace(/ /g, '%20');
+        let filename = 'report.xls';
+        let uri = 'data:application/vnd.ms-excel,' + html;
+        let link = document.createElement('a');
+        link.href = uri;
+        link.style.display = 'none';
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        // Try to open in Excel (browser will prompt)
+        window.open(uri);
+    });
+
+    // Export to PDF
+    document.getElementById('exportPDF').addEventListener('click', function(e) {
+        e.preventDefault();
+        // You would typically use a library like jsPDF here
+        alert('PDF export functionality would be implemented here');
+    });
+
+    // Export to CSV
+    document.getElementById('exportCSV').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Simple CSV export implementation
+        let csv = [];
+        let rows = document.querySelectorAll('#reportTable tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll('td, th');
+            
+            for (let j = 0; j < cols.length; j++) {
+                row.push(cols[j].innerText);
+            }
+            
+            csv.push(row.join(','));
+        }
+
+        // Download CSV file
+        let csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'report.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    // Set date range shortcuts
+    window.setDateRange = function(range) {
+        const today = new Date();
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        let startDate = new Date();
+        
+        switch(range) {
+            case 'today':
+                startDate = new Date(today);
+                break;
+            case 'week':
+                startDate.setDate(today.getDate() - 7);
+                break;
+            case 'month':
+                startDate.setMonth(today.getMonth() - 1);
+                break;
+            case 'year':
+                startDate.setFullYear(today.getFullYear() - 1);
+                break;
+        }
+        
+        startDateInput.value = startDate.toISOString().split('T')[0];
+        endDateInput.value = today.toISOString().split('T')[0];
+    };
+});
+</script>
+{% endblock %}
+

@@ -1519,19 +1519,141 @@ def admin_delete_payment(payment_id):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+# All Admin Report Routes
+@app.route('/admin/reports')
+def admin_reports():
+    # Get filter parameters from request
+    project_id = request.args.get('project_id', 'all')
+    site_engineer_id = request.args.get('site_engineer_id', 'all')
+    report_type = request.args.get('report_type', 'budget')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    status_filter = request.args.get('status', 'all')
 
+    # Get base data using your adminmodel
+    success, projects = adminmodel.get_all_projects()
+    if not success:
+        projects = []
+    
+    # Get all site engineers
+    success, site_engineers = adminmodel.get_all_siteEngineers()
+    if not success:
+        site_engineers = []
 
-@app.route('/admin/admin_logout')
-def admin_logout():
-    """Log out the site engineer and clear the session"""
-    session.clear()
-    flash("You have been logged out.", "success")
-    return redirect('/login')
+    # Initialize report data
+    report_data = []
+    totals = {
+        'amount': 0,
+        'count': 0
+    }
 
+    # Get project-specific data if a project is selected
+    selected_project = None
+    if project_id != 'all':
+        success, selected_project = adminmodel.get_project_by_id(project_id)
+        if not success:
+            selected_project = None
 
-# Set the secret key
-app.secret_key = '123'
+    # Get site engineer-specific data if an engineer is selected
+    selected_engineer = None
+    if site_engineer_id != 'all':
+        success, selected_engineer = adminmodel.get_site_engineer_by_id(site_engineer_id)
+        if not success:
+            selected_engineer = None
 
+    # Query based on report type using your adminmodel
+    if report_type == 'budget':
+        if project_id == 'all':
+            report_data = projects
+        else:
+            report_data = [selected_project] if selected_project else []
+            
+    elif report_type == 'wages':
+        success, wages = adminmodel.get_wages_report(project_id, site_engineer_id, start_date, end_date, status_filter)
+        if success:
+            report_data = wages
+            totals['amount'] = sum(wage['total_wage'] for wage in wages)
+            totals['count'] = len(wages)
+        
+    elif report_type == 'material':
+        success, materials = adminmodel.get_materials_report(project_id, site_engineer_id, start_date, end_date, status_filter)
+        if success:
+            report_data = materials
+            totals['amount'] = sum(material['amount'] for material in materials)
+            totals['count'] = len(materials)
+        
+    elif report_type == 'expense':
+        success, expenses = adminmodel.get_expenses_report(project_id, site_engineer_id, start_date, end_date, status_filter)
+        if success:
+            report_data = expenses
+            totals['amount'] = sum(expense['amount'] for expense in expenses)
+            totals['count'] = len(expenses)
+        
+        elif report_type == 'attendance':
+            success, attendance = adminmodel.get_attendance_report(
+                project_id, 
+                site_engineer_id, 
+                start_date, 
+                end_date
+            )
+            if success:
+                report_data = attendance
+                totals['count'] = len(attendance)
+                # Calculate paid/pending counts if needed
+                totals['paid'] = sum(1 for a in attendance if a.get('is_paid'))
+                totals['pending'] = totals['count'] - totals['paid']
+                
+    elif report_type == 'labour':
+        success, labour = adminmodel.get_labour_report(project_id, site_engineer_id)
+        if success:
+            report_data = labour
+            totals['count'] = len(labour)
+            
+    elif report_type == 'payments':
+        success, payments = adminmodel.get_payments_report(project_id, site_engineer_id, start_date, end_date)
+        if success:
+            report_data = payments
+            totals['amount'] = sum(payment['amount'] for payment in payments)
+            totals['count'] = len(payments)
+            
+    elif report_type == 'engineers':
+        success, engineers = adminmodel.get_engineers_report()
+        if success:
+            report_data = engineers
+            totals['count'] = len(engineers)
+            
+    elif report_type == 'budget_tracking':
+        success, tracking = adminmodel.get_budget_tracking_report(project_id, start_date, end_date)
+        if success:
+            report_data = tracking
+            totals['amount'] = sum(track['amount'] for track in tracking)
+            totals['count'] = len(tracking)
+
+    # Calculate dashboard metrics using adminmodel
+    success, total_site_engineers_count = adminmodel.get_total_site_engineers_count()
+    success, labours_assigned_to_projects_count = adminmodel.get_labours_assigned_count()
+    success, site_engineers_assigned_to_projects_count = adminmodel.get_site_engineers_assigned_count()
+    success, completed_tasks_count = adminmodel.get_completed_projects_count()
+
+    return render_template(
+        'admin/All_Admin_Reports.html',
+        projects=projects,
+        site_engineers=site_engineers,
+        report_data=report_data,
+        totals=totals,
+        report_type=report_type,
+        project_id=project_id,
+        site_engineer_id=site_engineer_id,
+        start_date=start_date,
+        end_date=end_date,
+        status_filter=status_filter,
+        selected_project=selected_project,
+        selected_engineer=selected_engineer,
+        total_site_engineers_count=total_site_engineers_count or 0,
+        labours_assigned_to_projects_count=labours_assigned_to_projects_count or 0,
+        site_engineers_assigned_to_projects_count=site_engineers_assigned_to_projects_count or 0,
+        completed_tasks_count=completed_tasks_count or 0
+    )
 
 # Here are all my forgot and reset password routes
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -1616,3 +1738,14 @@ def reset_password(token):
 
     return render_template('admin/reset_password.html', token=token)
 
+
+@app.route('/admin/admin_logout')
+def admin_logout():
+    """Log out the site engineer and clear the session"""
+    session.clear()
+    flash("You have been logged out.", "success")
+    return redirect('/login')
+
+
+# Set the secret key
+app.secret_key = '123'

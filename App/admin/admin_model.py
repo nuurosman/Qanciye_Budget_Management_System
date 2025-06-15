@@ -1398,8 +1398,6 @@ class AdminModel:
             self.connection.rollback()
             return False, f"Error: {e}"
 
-
-
     # Payment Management Section Start
     def register_payment(self, project_id, amount, payment_date, payment_method, payment_status, admin_id, wage_id=None, material_id=None, expense_id=None):
         try:
@@ -1557,183 +1555,183 @@ class AdminModel:
             print(f"Error in delete_payment: {e}")
             return (False, str(e))
         
-        
-    def get_unpaid_wages(self):
-        """
-        Fetch all unpaid wage records (is_paid = FALSE).
-        Returns a list of dicts with wage_id, labour_name, project_name, total_wage.
-        """
-        try:
-            sql = """
-            SELECT 
-                w.wage_id,
-                l.full_name AS labour_name,
-                p.name AS project_name,
-                w.total_wage,
-                w.project_id
-            FROM wages w
-            JOIN labour l ON w.labour_id = l.labour_id
-            JOIN projects p ON w.project_id = p.project_id
-            WHERE w.is_paid = FALSE
-            """
-            dict_cursor = self.connection.cursor(dictionary=True)
-            dict_cursor.execute(sql)
-            unpaid_wages = dict_cursor.fetchall()
-            dict_cursor.close()
-            return unpaid_wages
-        except Exception as e:
-            print(f"Error in get_unpaid_wages: {e}")
-            return []
+    # def get_unpaid_wages(self):
+    #     """
+    #     Fetch all unpaid wage records (is_paid = FALSE).
+    #     Returns a list of dicts with wage_id, labour_name, project_name, total_wage.
+    #     """
+    #     try:
+    #         sql = """
+    #         SELECT 
+    #             w.wage_id,
+    #             l.full_name AS labour_name,
+    #             p.name AS project_name,
+    #             w.total_wage,
+    #             w.project_id
+    #         FROM wages w
+    #         JOIN labour l ON w.labour_id = l.labour_id
+    #         JOIN projects p ON w.project_id = p.project_id
+    #         WHERE w.is_paid = FALSE
+    #         """
+    #         dict_cursor = self.connection.cursor(dictionary=True)
+    #         dict_cursor.execute(sql)
+    #         unpaid_wages = dict_cursor.fetchall()
+    #         dict_cursor.close()
+    #         return unpaid_wages
+    #     except Exception as e:
+    #         print(f"Error in get_unpaid_wages: {e}")
+    #         return []
 
-    def get_unpaid_materials(self):
-        """
-        Fetch all unpaid material records (is_paid = FALSE).
-        Returns a list of dicts with material_id, material_name, total_cost.
-        """
-        try:
-            sql = """
-            SELECT 
-                m.material_id,
-                m.item_name AS material_name,
-                m.amount AS total_cost,
-                m.project_id
-            FROM materials m
-            WHERE m.is_paid = FALSE
-            """
-            dict_cursor = self.connection.cursor(dictionary=True)
-            dict_cursor.execute(sql)
-            unpaid_materials = dict_cursor.fetchall()
-            dict_cursor.close()
-            return unpaid_materials
-        except Exception as e:
-            print(f"Error in get_unpaid_materials: {e}")
-            return []
+    # def get_unpaid_materials(self):
+    #     """
+    #     Fetch all unpaid material records (is_paid = FALSE).
+    #     Returns a list of dicts with material_id, material_name, total_cost.
+    #     """
+    #     try:
+    #         sql = """
+    #         SELECT 
+    #             m.material_id,
+    #             m.item_name AS material_name,
+    #             m.amount AS total_cost,
+    #             m.project_id
+    #         FROM materials m
+    #         WHERE m.is_paid = FALSE
+    #         """
+    #         dict_cursor = self.connection.cursor(dictionary=True)
+    #         dict_cursor.execute(sql)
+    #         unpaid_materials = dict_cursor.fetchall()
+    #         dict_cursor.close()
+    #         return unpaid_materials
+    #     except Exception as e:
+    #         print(f"Error in get_unpaid_materials: {e}")
+    #         return []
 
-    def get_unpaid_expenses(self):
-        """
-        Fetch all unpaid expense records (is_paid = FALSE).
-        Returns a list of dicts with expense_id, expense_name, amount.
-        """
-        try:
-            sql = """
-            SELECT 
-                e.expense_id,
-                e.item_name AS expense_name,
-                e.amount,
-                e.project_id
-            FROM expenses e
-            WHERE e.is_paid = FALSE
-            """
-            dict_cursor = self.connection.cursor(dictionary=True)
-            dict_cursor.execute(sql)
-            unpaid_expenses = dict_cursor.fetchall()
-            dict_cursor.close()
-            return unpaid_expenses
-        except Exception as e:
-            print(f"Error in get_unpaid_expenses: {e}")
-            return []
-    
-    # Dashboard ongoing
+    # def get_unpaid_expenses(self):
+    #     """
+    #     Fetch all unpaid expense records (is_paid = FALSE).
+    #     Returns a list of dicts with expense_id, expense_name, amount.
+    #     """
+    #     try:
+    #         sql = """
+    #         SELECT 
+    #             e.expense_id,
+    #             e.item_name AS expense_name,
+    #             e.amount,
+    #             e.project_id
+    #         FROM expenses e
+    #         WHERE e.is_paid = FALSE
+    #         """
+    #         dict_cursor = self.connection.cursor(dictionary=True)
+    #         dict_cursor.execute(sql)
+    #         unpaid_expenses = dict_cursor.fetchall()
+    #         dict_cursor.close()
+    #         return unpaid_expenses
+    #     except Exception as e:
+    #         print(f"Error in get_unpaid_expenses: {e}")
+    #         return []
+
+
+
+    # get ongoing projects
     def get_ongoing_projects(self):
+        """Get all ongoing projects with their budget data"""
         try:
             cursor = self.connection.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM projects WHERE status = 'ongoing'")
-            projects = cursor.fetchall()
+            cursor.execute("""
+                SELECT p.*, se.full_name as site_engineer_name 
+                FROM projects p
+                LEFT JOIN site_engineer se ON p.site_engineer_id = se.site_engineer_id
+                WHERE p.status = 'In Progress'
+            """)
+            result = cursor.fetchall()
             cursor.close()
-            return True, projects
+            return True, result
         except Exception as e:
             return False, str(e)
 
-    def get_todays_attendance_count(self, today):
+    def get_ongoing_projects_with_budget(self):
+        """Get ongoing projects with calculated budget data"""
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT 
+                    p.project_id,
+                    p.name,
+                    p.total_budget,
+                    p.used_budget,
+                    p.remaining_budget,
+                    p.status,
+                    se.full_name as site_engineer_name
+                FROM projects p
+                LEFT JOIN site_engineer se ON p.site_engineer_id = se.site_engineer_id
+                WHERE p.status = 'In Progress'
+            """)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            return False, str(e)
+
+    def get_ongoing_projects_count(self):
+        """Count ongoing projects"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute("""
-                SELECT COUNT(*) FROM attendance 
-                WHERE date = %s AND status = 'present'
-            """, (today,))
-            count = cursor.fetchone()[0] or 0
+            cursor.execute("SELECT COUNT(*) FROM projects WHERE status = 'In Progress'")
+            count = cursor.fetchone()[0]
             cursor.close()
             return True, count
         except Exception as e:
             return False, str(e)
 
-    def get_last_attendance(self, today):
+    def get_todays_attendance_count(self, date):
+        """Count distinct labours with attendance today"""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("""
+                SELECT COUNT(DISTINCT labour_id) 
+                FROM attendance 
+                WHERE DATE(date) = %s
+            """, (date,))
+            count = cursor.fetchone()[0]
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+
+    def get_last_attendance(self, date):
+        """Get the most recent attendance record for today"""
         try:
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute("""
-                SELECT * FROM attendance 
-                WHERE date = %s 
-                ORDER BY created_at DESC 
+                SELECT * FROM attendance
+                WHERE DATE(date) = %s
+                ORDER BY created_at DESC
                 LIMIT 1
-            """, (today,))
-            attendance = cursor.fetchone()
+            """, (date,))
+            result = cursor.fetchone()
             cursor.close()
-            return True, attendance
+            return True, result
         except Exception as e:
             return False, str(e)
 
     def get_attendance_trend(self, start_date, end_date):
+        """Get daily attendance counts for a date range"""
         try:
             cursor = self.connection.cursor()
             cursor.execute("""
-                SELECT date, COUNT(*) as count 
-                FROM attendance 
-                WHERE date BETWEEN %s AND %s 
-                AND status = 'present'
-                GROUP BY date 
-                ORDER BY date
+                SELECT DATE(date) as day, COUNT(*) as count
+                FROM attendance
+                WHERE DATE(date) BETWEEN %s AND %s
+                GROUP BY DATE(date)
+                ORDER BY DATE(date)
             """, (start_date, end_date))
-            trend = cursor.fetchall()
+            result = cursor.fetchall()
             cursor.close()
-            return True, trend
+            return True, result
         except Exception as e:
             return False, str(e)
 
     
-
-
-
-    # def get_total_expenses_for_projects(self):
-    #     try:
-    #         cursor = self.connection.cursor()
-    #         cursor.execute("""
-    #             SELECT project_id, SUM(amount) as total_expenses 
-    #             FROM expenses 
-    #             GROUP BY project_id
-    #         """)
-    #         expenses = {row[0]: float(row[1]) for row in cursor.fetchall()}
-    #         cursor.close()
-    #         return True, expenses
-    #     except Exception as e:
-    #         return False, str(e)
-
-    # def get_total_wages_for_projects(self):
-    #     try:
-    #         cursor = self.connection.cursor()
-    #         cursor.execute("""
-    #             SELECT project_id, SUM(total_wage) as total_wages 
-    #             FROM wages 
-    #             GROUP BY project_id
-    #         """)
-    #         wages = {row[0]: float(row[1]) for row in cursor.fetchall()}
-    #         cursor.close()
-    #         return True, wages
-    #     except Exception as e:
-    #         return False, str(e)
-
-    # def get_total_materials_for_projects(self):
-    #     try:
-    #         cursor = self.connection.cursor()
-    #         cursor.execute("""
-    #             SELECT project_id, SUM(amount) as total_materials 
-    #             FROM materials 
-    #             GROUP BY project_id
-    #         """)
-    #         materials = {row[0]: float(row[1]) for row in cursor.fetchall()}
-    #         cursor.close()
-    #         return True, materials
-    #     except Exception as e:
-    #         return False, str(e)
 
     def update_project_budgets(self):
         """
@@ -1774,5 +1772,489 @@ class AdminModel:
         except Exception as e:
             self.connection.rollback()
             return False, f"Error updating project budgets: {e}"
+    
+   
+    # --- Add these methods for admin reports/dashboard metrics ---
 
-    # existing code 
+    def get_total_site_engineers_count(self):
+        """Return the total number of site engineers."""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT COUNT(*) FROM site_engineer")
+            count = cursor.fetchone()[0]
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+
+    def get_labours_assigned_count(self):
+        """Return the number of unique labours assigned to projects."""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT COUNT(DISTINCT labour_id) FROM labour_project")
+            count = cursor.fetchone()[0]
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+
+    def get_site_engineers_assigned_count(self):
+        """Return the number of unique site engineers assigned to projects."""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT COUNT(DISTINCT site_engineer_id) FROM projects WHERE site_engineer_id IS NOT NULL")
+            count = cursor.fetchone()[0]
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+
+    def get_completed_projects_count(self):
+        """Return the number of completed projects."""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT COUNT(*) FROM projects WHERE status = 'completed'")
+            count = cursor.fetchone()[0]
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+    
+
+
+    def get_labour_report(self, project_id='all', site_engineer_id='all'):
+        try:
+            query = """
+                SELECT l.*, p.name as project_name, se.full_name as site_engineer_name
+                FROM labour l
+                LEFT JOIN projects p ON l.project_id = p.project_id
+                LEFT JOIN site_engineer se ON l.assigned_by = se.site_engineer_id
+            """
+            
+            conditions = []
+            params = []
+            
+            if project_id != 'all':
+                conditions.append("l.project_id = %s")
+                params.append(project_id)
+                
+            if site_engineer_id != 'all':
+                conditions.append("l.assigned_by = %s")
+                params.append(site_engineer_id)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            cursor = self.conn.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            
+            return True, result
+            
+        except Exception as e:
+            print(f"Error getting labour report: {e}")
+            return False, str(e)
+
+    def get_payments_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None):
+        try:
+            query = """
+                SELECT p.*, pr.name as project_name, se.full_name as site_engineer_name
+                FROM payments p
+                LEFT JOIN projects pr ON p.project_id = pr.project_id
+                LEFT JOIN site_engineer se ON p.recorded_by = se.site_engineer_id
+            """
+            
+            conditions = []
+            params = []
+            
+            if project_id != 'all':
+                conditions.append("p.project_id = %s")
+                params.append(project_id)
+                
+            if site_engineer_id != 'all':
+                conditions.append("p.recorded_by = %s")
+                params.append(site_engineer_id)
+                
+            if start_date:
+                conditions.append("p.payment_date >= %s")
+                params.append(start_date)
+                
+            if end_date:
+                conditions.append("p.payment_date <= %s")
+                params.append(end_date)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += " ORDER BY p.payment_date DESC"
+                
+            cursor = self.conn.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            
+            return True, result
+            
+        except Exception as e:
+            print(f"Error getting payments report: {e}")
+            return False, str(e)
+
+    def get_engineers_report(self):
+        try:
+            query = """
+                SELECT se.*, 
+                    (SELECT COUNT(*) FROM projects p WHERE p.site_engineer_id = se.site_engineer_id) as project_count
+                FROM site_engineer se
+                ORDER BY se.full_name
+            """
+            
+            cursor = self.conn.cursor(dictionary=True)
+            cursor.execute(query)
+            result = cursor.fetchall()
+            cursor.close()
+            
+            return True, result
+            
+        except Exception as e:
+            print(f"Error getting engineers report: {e}")
+            return False, str(e)
+
+    def get_budget_tracking_report(self, project_id='all', start_date=None, end_date=None):
+        try:
+            query = """
+                SELECT bt.*, p.name as project_name, se.full_name as site_engineer_name
+                FROM budget_tracking bt
+                LEFT JOIN projects p ON bt.project_id = p.project_id
+                LEFT JOIN site_engineer se ON bt.recorded_by = se.site_engineer_id
+            """
+            
+            conditions = []
+            params = []
+            
+            if project_id != 'all':
+                conditions.append("bt.project_id = %s")
+                params.append(project_id)
+                
+            if start_date:
+                conditions.append("bt.tracking_date >= %s")
+                params.append(start_date)
+                
+            if end_date:
+                conditions.append("bt.tracking_date <= %s")
+                params.append(end_date)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += " ORDER BY bt.tracking_date DESC"
+                
+            cursor = self.conn.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            
+            return True, result
+            
+        except Exception as e:
+            print(f"Error getting budget tracking report: {e}")
+            return False, str(e)
+
+    def get_materials_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None, status_filter='all'):
+        """
+        Returns a tuple (success, materials_list) for the materials report.
+        Filters by project, site engineer, date range, and paid status.
+        """
+        try:
+            query = """
+                SELECT m.*, p.name as project_name, se.full_name as site_engineer_name
+                FROM materials m
+                LEFT JOIN projects p ON m.project_id = p.project_id
+                LEFT JOIN site_engineer se ON m.site_engineer_id = se.site_engineer_id
+            """
+            conditions = []
+            params = []
+
+            if project_id != 'all':
+                conditions.append("m.project_id = %s")
+                params.append(project_id)
+            if site_engineer_id != 'all':
+                conditions.append("m.site_engineer_id = %s")
+                params.append(site_engineer_id)
+            if start_date:
+                conditions.append("DATE(m.created_at) >= %s")
+                params.append(start_date)
+            if end_date:
+                conditions.append("DATE(m.created_at) <= %s")
+                params.append(end_date)
+            if status_filter == 'paid':
+                conditions.append("m.is_paid = TRUE")
+            elif status_filter == 'pending':
+                conditions.append("m.is_paid = FALSE")
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+            query += " ORDER BY m.created_at DESC"
+
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            print(f"Error in get_materials_report: {e}")
+            return False, str(e)
+
+    def get_project_by_id(self, project_id):
+        """
+        Returns (success, project_dict) for a single project by ID.
+        """
+        try:
+            sql = """
+                SELECT p.*, se.full_name as site_engineer_name, a.full_name as admin_name
+                FROM projects p
+                LEFT JOIN site_engineer se ON p.site_engineer_id = se.site_engineer_id
+                LEFT JOIN admin a ON p.admin_id = a.admin_id
+                WHERE p.project_id = %s
+            """
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(sql, (project_id,))
+            project = cursor.fetchone()
+            cursor.close()
+            if project:
+                return True, project
+            else:
+                return False, None
+        except Exception as e:
+            print(f"Error in get_project_by_id: {e}")
+            return False, str(e)
+
+    def get_site_engineer_by_id(self, site_engineer_id):
+        """
+        Returns (success, site_engineer_dict) for a single site engineer by ID.
+        """
+        try:
+            sql = """
+                SELECT * FROM site_engineer WHERE site_engineer_id = %s
+            """
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(sql, (site_engineer_id,))
+            engineer = cursor.fetchone()
+            cursor.close()
+            if engineer:
+                return True, engineer
+            else:
+                return False, None
+        except Exception as e:
+            print(f"Error in get_site_engineer_by_id: {e}")
+            return False, str(e)
+
+    def get_expenses_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None, status_filter='all'):
+        """
+        Returns a tuple (success, expenses_list) for the expenses report.
+        Filters by project, site engineer, date range, and paid status.
+        """
+        try:
+            query = """
+                SELECT e.*, p.name as project_name, se.full_name as site_engineer_name
+                FROM expenses e
+                LEFT JOIN projects p ON e.project_id = p.project_id
+                LEFT JOIN site_engineer se ON e.site_engineer_id = se.site_engineer_id
+            """
+            conditions = []
+            params = []
+
+            if project_id != 'all':
+                conditions.append("e.project_id = %s")
+                params.append(project_id)
+            if site_engineer_id != 'all':
+                conditions.append("e.site_engineer_id = %s")
+                params.append(site_engineer_id)
+            if start_date:
+                conditions.append("DATE(e.created_at) >= %s")
+                params.append(start_date)
+            if end_date:
+                conditions.append("DATE(e.created_at) <= %s")
+                params.append(end_date)
+            if status_filter == 'paid':
+                conditions.append("e.is_paid = TRUE")
+            elif status_filter == 'pending':
+                conditions.append("e.is_paid = FALSE")
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+            query += " ORDER BY e.created_at DESC"
+
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            print(f"Error in get_expenses_report: {e}")
+            return False, str(e)
+
+    def get_wages_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None, status_filter='all'):
+        """
+        Returns a tuple (success, wages_list) for the wages report.
+        Filters by project, site engineer, date range, and paid status.
+        """
+        try:
+            query = """
+                SELECT w.*, l.full_name as labour_name, p.name as project_name, se.full_name as site_engineer_name
+                FROM wages w
+                LEFT JOIN labour l ON w.labour_id = l.labour_id
+                LEFT JOIN projects p ON w.project_id = p.project_id
+                LEFT JOIN site_engineer se ON w.site_engineer_id = se.site_engineer_id
+            """
+            conditions = []
+            params = []
+
+            if project_id != 'all':
+                conditions.append("w.project_id = %s")
+                params.append(project_id)
+            if site_engineer_id != 'all':
+                conditions.append("w.site_engineer_id = %s")
+                params.append(site_engineer_id)
+            if start_date:
+                conditions.append("DATE(w.created_at) >= %s")
+                params.append(start_date)
+            if end_date:
+                conditions.append("DATE(w.created_at) <= %s")
+                params.append(end_date)
+            if status_filter == 'paid':
+                conditions.append("w.is_paid = TRUE")
+            elif status_filter == 'pending':
+                conditions.append("w.is_paid = FALSE")
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+            query += " ORDER BY w.created_at DESC"
+
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            print(f"Error in get_wages_report: {e}")
+            return False, str(e)
+    
+        def get_attendance_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None):
+            try:
+                query = """
+                    SELECT 
+                        a.attendance_id,
+                        a.date,
+                        a.status,
+                        a.is_paid,
+                        l.labour_id,
+                        l.full_name as labour_name,
+                        p.project_id,
+                        p.name as project_name,
+                        se.site_engineer_id,
+                        se.full_name as site_engineer_name,
+                        se.email as site_engineer_email
+                    FROM attendance a
+                    LEFT JOIN labour l ON a.labour_id = l.labour_id
+                    LEFT JOIN projects p ON a.project_id = p.project_id
+                    LEFT JOIN site_engineer se ON a.site_engineer_id = se.site_engineer_id
+                """
+                
+                conditions = []
+                params = []
+                
+                if project_id != 'all':
+                    conditions.append("a.project_id = %s")
+                    params.append(project_id)
+                    
+                if site_engineer_id != 'all':
+                    conditions.append("a.site_engineer_id = %s")
+                    params.append(site_engineer_id)
+                    
+                if start_date:
+                    conditions.append("a.date >= %s")
+                    params.append(start_date)
+                    
+                if end_date:
+                    conditions.append("a.date <= %s")
+                    params.append(end_date)
+                    
+                if conditions:
+                    query += " WHERE " + " AND ".join(conditions)
+                    
+                query += " ORDER BY a.date DESC"
+                    
+                cursor = self.connection.cursor(dictionary=True)
+                cursor.execute(query, params)
+                result = cursor.fetchall()
+                cursor.close()
+                return True, result
+            except Exception as e:
+                print(f"Error getting attendance report: {e}")
+                return False, str(e)
+
+    def get_labour_report(self, project_id='all', site_engineer_id='all'):
+        try:
+            query = """
+                SELECT 
+                    l.labour_id,
+                    l.full_name,
+                    l.email,
+                    l.phone,
+                    l.type_of_work,
+                    l.daily_rate,
+                    l.created_at,
+                    p.project_id,
+                    p.name as project_name,
+                    se.site_engineer_id,
+                    se.full_name as site_engineer_name,
+                    se.email as site_engineer_email,
+                    lp.assigned_date
+                FROM labour l
+                LEFT JOIN labour_project lp ON l.labour_id = lp.labour_id
+                LEFT JOIN projects p ON lp.project_id = p.project_id
+                LEFT JOIN site_engineer se ON lp.assigned_by = se.site_engineer_id
+            """
+            
+            conditions = []
+            params = []
+            
+            if project_id != 'all':
+                conditions.append("lp.project_id = %s")
+                params.append(project_id)
+                
+            if site_engineer_id != 'all':
+                conditions.append("lp.assigned_by = %s")
+                params.append(site_engineer_id)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += " ORDER BY l.full_name"
+                
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            print(f"Error getting labour report: {e}")
+            return False, str(e)
+            
+
+    def get_all_siteEngineers(self):
+        """Return all site engineers with basic information."""
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT site_engineer_id, full_name, email, created_at 
+                FROM site_engineer
+                ORDER BY full_name
+            """)
+            engineers = cursor.fetchall()
+            cursor.close()
+            return True, engineers
+        except Exception as e:
+            print(f"Error getting site engineers: {e}")
+            return False, str(e)
