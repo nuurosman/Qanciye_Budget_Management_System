@@ -562,7 +562,8 @@ class UserModel:
                 site_engineer_id
             ))
 
-            self.connection.commit()  # Ensure changes are visible to other sessions
+            # Commit immediately to make changes visible
+            self.connection.commit()
             return True, "Attendance registered successfully!"
         except Exception as e:
             self.connection.rollback()

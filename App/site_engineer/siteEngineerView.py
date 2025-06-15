@@ -763,8 +763,10 @@ def register_siteEngineer_attendance():
             status=data['status'],
             site_engineer_id=site_engineer_id
         )
-        # Ensure commit after operation
+        
+        # Ensure changes are committed and visible
         model.connection.commit()
+        
 
         if success:
             return jsonify({"success": True, "message": message}), 200
@@ -773,7 +775,7 @@ def register_siteEngineer_attendance():
 
     except Exception as e:
         print(f"Error in register_attendance: {e}")
-        traceback.print_exc()
+        model.connection.rollback()
         return jsonify({"success": False, "message": "An internal error occurred"}), 500
 
 @app.route('/update_siteEngineer_attendance', methods=['POST'])
@@ -875,20 +877,23 @@ def get_siteEngineer_labour_project(labour_id):
         if not success:
             return jsonify({"success": False, "message": "Database connection failed."}), 500
 
+        # Fix: Query the labour_project table for assigned projects
         sql = """
         SELECT project_id 
-        FROM labour 
+        FROM labour_project 
         WHERE labour_id = %s
         """
         model.cursor.execute(sql, (labour_id,))
-        result = model.cursor.fetchone()
+        results = model.cursor.fetchall()
         
-        if result:
+        if results:
+            # Return all assigned project_ids as a list
+            project_ids = [row['project_id'] if isinstance(row, dict) else row[0] for row in results]
             return jsonify({
                 "success": True,
-                "project_id": result['project_id']
+                "project_ids": project_ids
             }), 200
-        return jsonify({"success": False, "message": "Labour not found"}), 404
+        return jsonify({"success": False, "message": "No projects found for this labour"}), 404
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
@@ -1441,6 +1446,9 @@ app.secret_key = 'your_secret_key_here'
 #             columns=columns
 #         )
 #     except Exception as e:
+#         print(f"Error loading financial report: {e}")
+#         flash("An error occurred while loading the report.", "danger")
+#         return redirect('/site_engineer/dashboard')
 #         print(f"Error loading financial report: {e}")
 #         flash("An error occurred while loading the report.", "danger")
 #         return redirect('/site_engineer/dashboard')

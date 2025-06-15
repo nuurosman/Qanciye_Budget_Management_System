@@ -1,6 +1,7 @@
 import mysql.connector
 from App.configuration import AdminDbConnetion
 import hashlib
+from datetime import datetime, timedelta
 from decimal import Decimal  # Import Decimal
 
 
@@ -1631,3 +1632,147 @@ class AdminModel:
         except Exception as e:
             print(f"Error in get_unpaid_expenses: {e}")
             return []
+    
+    # Dashboard ongoing
+    def get_ongoing_projects(self):
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM projects WHERE status = 'ongoing'")
+            projects = cursor.fetchall()
+            cursor.close()
+            return True, projects
+        except Exception as e:
+            return False, str(e)
+
+    def get_todays_attendance_count(self, today):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM attendance 
+                WHERE date = %s AND status = 'present'
+            """, (today,))
+            count = cursor.fetchone()[0] or 0
+            cursor.close()
+            return True, count
+        except Exception as e:
+            return False, str(e)
+
+    def get_last_attendance(self, today):
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT * FROM attendance 
+                WHERE date = %s 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            """, (today,))
+            attendance = cursor.fetchone()
+            cursor.close()
+            return True, attendance
+        except Exception as e:
+            return False, str(e)
+
+    def get_attendance_trend(self, start_date, end_date):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("""
+                SELECT date, COUNT(*) as count 
+                FROM attendance 
+                WHERE date BETWEEN %s AND %s 
+                AND status = 'present'
+                GROUP BY date 
+                ORDER BY date
+            """, (start_date, end_date))
+            trend = cursor.fetchall()
+            cursor.close()
+            return True, trend
+        except Exception as e:
+            return False, str(e)
+
+    
+
+
+
+    # def get_total_expenses_for_projects(self):
+    #     try:
+    #         cursor = self.connection.cursor()
+    #         cursor.execute("""
+    #             SELECT project_id, SUM(amount) as total_expenses 
+    #             FROM expenses 
+    #             GROUP BY project_id
+    #         """)
+    #         expenses = {row[0]: float(row[1]) for row in cursor.fetchall()}
+    #         cursor.close()
+    #         return True, expenses
+    #     except Exception as e:
+    #         return False, str(e)
+
+    # def get_total_wages_for_projects(self):
+    #     try:
+    #         cursor = self.connection.cursor()
+    #         cursor.execute("""
+    #             SELECT project_id, SUM(total_wage) as total_wages 
+    #             FROM wages 
+    #             GROUP BY project_id
+    #         """)
+    #         wages = {row[0]: float(row[1]) for row in cursor.fetchall()}
+    #         cursor.close()
+    #         return True, wages
+    #     except Exception as e:
+    #         return False, str(e)
+
+    # def get_total_materials_for_projects(self):
+    #     try:
+    #         cursor = self.connection.cursor()
+    #         cursor.execute("""
+    #             SELECT project_id, SUM(amount) as total_materials 
+    #             FROM materials 
+    #             GROUP BY project_id
+    #         """)
+    #         materials = {row[0]: float(row[1]) for row in cursor.fetchall()}
+    #         cursor.close()
+    #         return True, materials
+    #     except Exception as e:
+    #         return False, str(e)
+
+    def update_project_budgets(self):
+        """
+        Update each project's used_budget and remaining_budget based on
+        the sum of related expenses, wages, and materials.
+        """
+        try:
+            cursor = self.connection.cursor()
+            # Get all project IDs and total budgets
+            cursor.execute("SELECT project_id, total_budget FROM projects")
+            projects = cursor.fetchall()
+            for project in projects:
+                project_id, total_budget = project
+
+                # Sum expenses
+                cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE project_id = %s", (project_id,))
+                expenses_sum = float(cursor.fetchone()[0] or 0)
+
+                # Sum wages
+                cursor.execute("SELECT COALESCE(SUM(total_wage), 0) FROM wages WHERE project_id = %s", (project_id,))
+                wages_sum = float(cursor.fetchone()[0] or 0)
+
+                # Sum materials
+                cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM materials WHERE project_id = %s", (project_id,))
+                materials_sum = float(cursor.fetchone()[0] or 0)
+
+                used_budget = expenses_sum + wages_sum + materials_sum
+                remaining_budget = float(total_budget) - used_budget
+
+                # Update the project
+                cursor.execute(
+                    "UPDATE projects SET used_budget = %s, remaining_budget = %s WHERE project_id = %s",
+                    (used_budget, remaining_budget, project_id)
+                )
+            self.connection.commit()
+            cursor.close()
+            return True, "Budgets updated successfully"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error updating project budgets: {e}"
+
+    # existing code 

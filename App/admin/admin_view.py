@@ -11,6 +11,8 @@ from itsdangerous import URLSafeTimedSerializer
 from App.admin.email_utils import send_reset_email
 from collections import defaultdict
 import time
+from itsdangerous import URLSafeTimedSerializer
+from datetime import datetime, timedelta
 
 
 # Initialize the user model at the application level
@@ -64,8 +66,8 @@ def get_total_site_engineers_count():
     success, site_engineers = adminmodel.get_all_siteEngineers()
     return len(site_engineers) if success else 0
 
-# Admin Dashboard
 
+# Admin Dashboard
 def get_total_admins_count():
     cursor = adminmodel.connection.cursor()
     cursor.execute("SELECT COUNT(*) FROM admin")
@@ -186,7 +188,61 @@ def dashboard():
                            site_engineers_assigned_to_projects_count=site_engineers_assigned_to_projects_count,
                             ongoing_tasks_count=ongoing_tasks_count,
                         completed_tasks_count=completed_tasks_count)
+
+
 # Admin Dashboard End    
+@app.route('/admin/dashboard/data')
+def dashboard_data():
+    if not session.get('user') or session.get('user').get('user_type') != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    # First update all project budgets
+    success, message = adminmodel.update_project_budgets()
+    if not success:
+        return jsonify({'error': message}), 500
+    
+    # Then proceed with getting dashboard data
+    success, ongoing_projects = adminmodel.get_ongoing_projects()
+    if not success:
+        return jsonify({'error': ongoing_projects}), 500
+    
+    budget_data = [{
+        'name': project['name'],
+        'total_budget': float(project['total_budget']),
+        'used_budget': float(project['used_budget']),
+        'remaining_budget': float(project['remaining_budget'])
+    } for project in ongoing_projects]
+    
+    total_money_spent = sum(float(project['used_budget']) for project in ongoing_projects)
+    total_budget = sum(float(project['total_budget']) for project in ongoing_projects)
+    budget_usage_percentage = (total_money_spent / total_budget * 100) if total_budget > 0 else 0
+    
+    today = datetime.now().date()
+    success, active_labours_count = adminmodel.get_todays_attendance_count(today)
+    if not success:
+        return jsonify({'error': active_labours_count}), 500
+    
+    success, last_attendance = adminmodel.get_last_attendance(today)
+    if not success:
+        return jsonify({'error': last_attendance}), 500
+    
+    last_attendance_time = last_attendance['created_at'].strftime('%H:%M:%S') if last_attendance else None
+    
+    seven_days_ago = today - timedelta(days=7)
+    success, attendance_trend = adminmodel.get_attendance_trend(seven_days_ago, today)
+    if not success:
+        return jsonify({'error': attendance_trend}), 500
+    
+    return jsonify({
+        'budgetData': budget_data,
+        'totalMoneySpent': total_money_spent,
+        'budgetUsagePercentage': round(budget_usage_percentage, 2),
+        'activeLaboursCount': active_labours_count,
+        'lastAttendanceTime': last_attendance_time,
+        'attendanceTrend': [{'date': str(date), 'count': count} for date, count in attendance_trend]
+    })
+
+
 
 
 # Admins Management

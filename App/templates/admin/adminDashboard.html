@@ -190,92 +190,245 @@
 </div>
 
 
-   <div class="row">
-              <div class="col-md-8">
-                <div class="card">
-                  <div class="card-header">
-                    <div class="card-head-row">
-                      <div class="card-title">User Statistics</div>
-                      <div class="card-tools">
-                        <a
-                          href="#"
-                          class="btn btn-label-success btn-round btn-sm me-2"
-                        >
-                          <span class="btn-label">
-                            <i class="fa fa-pencil"></i>
-                          </span>
-                          Export
+  <div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Ongoing Projects Budget Summary</div>
+                    <div class="card-tools">
+                        <a href="#" class="btn btn-label-success btn-round btn-sm me-2">
+                            <span class="btn-label">
+                                <i class="fa fa-pencil"></i>
+                            </span>
+                            Export
                         </a>
                         <a href="#" class="btn btn-label-info btn-round btn-sm">
-                          <span class="btn-label">
-                            <i class="fa fa-print"></i>
-                          </span>
-                          Print
+                            <span class="btn-label">
+                                <i class="fa fa-print"></i>
+                            </span>
+                            Print
                         </a>
-                      </div>
                     </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="chart-container" style="min-height: 375px">
-                      <canvas id="statisticsChart"></canvas>
-                    </div>
-                    <div id="myChartLegend"></div>
-                  </div>
                 </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card card-primary">
-                  <div class="card-header">
-                    <div class="card-head-row">
-                      <div class="card-title">Daily Sales</div>
-                      <div class="card-tools">
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="min-height: 375px">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+                <div id="budgetChartLegend"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Total Money Spent</div>
+                    <div class="card-tools">
                         <div class="dropdown">
-                          <button
-                            class="btn btn-sm btn-label-light dropdown-toggle"
-                            type="button"
-                            id="dropdownMenuButton"
-                            data-bs-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                            Export
-                          </button>
-                          <div
-                            class="dropdown-menu"
-                            aria-labelledby="dropdownMenuButton"
-                          >
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#"
-                              >Something else here</a
-                            >
-                          </div>
+                            <button class="btn btn-sm btn-label-light dropdown-toggle" type="button" 
+                                    id="dropdownMenuButton" data-bs-toggle="dropdown" 
+                                    aria-haspopup="true" aria-expanded="false">
+                                Export
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#">Action</a>
+                                <a class="dropdown-item" href="#">Another action</a>
+                                <a class="dropdown-item" href="#">Something else here</a>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                    <div class="card-category">March 25 - April 02</div>
-                  </div>
-                  <div class="card-body pb-0">
-                    <div class="mb-4 mt-2">
-                      <h1>$4,578.58</h1>
-                    </div>
-                    <div class="pull-in">
-                      <canvas id="dailySalesChart"></canvas>
-                    </div>
-                  </div>
                 </div>
-                <div class="card">
-                  <div class="card-body pb-0">
-                    <div class="h1 fw-bold float-end text-primary">+5%</div>
-                    <h2 class="mb-2">17</h2>
-                    <p class="text-muted">Users online</p>
-                    <div class="pull-in sparkline-fix">
+            </div>
+            <div class="card-body pb-0">
+                <div class="mb-4 mt-2">
+                    <h1 id="totalMoneySpent">$0.00</h1>
+                </div>
+                <div class="progress progress-sm">
+                    <div id="budgetUsageProgress" class="progress-bar bg-success" role="progressbar" 
+                         style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="mt-2 mb-0 text-muted">
+                    <span id="budgetUsageText">0% of total budget used</span>
+                </p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body pb-0">
+                <div class="h1 fw-bold float-end text-primary" id="attendanceChangeIndicator">+0%</div>
+                <h2 class="mb-2" id="activeLaboursCount">0</h2>
+                <p class="text-muted">Active Labours Today</p>
+                <div class="mt-3">
+                    <p class="text-muted mb-1">Last Attendance:</p>
+                    <p class="fw-bold" id="lastAttendanceTime">No attendance recorded today</p>
+                </div>
+                <div class="pull-in sparkline-fix">
+                    <div id="attendanceTrendChart"></div>
+                </div>
+                 <div class="pull-in sparkline-fix">
                       <div id="lineChart"></div>
                     </div>
-                  </div>
-                </div>
-              </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle real-time updates -->
+<script>
+// Function to fetch and update dashboard data
+// Function to fetch and update dashboard data
+function updateDashboardData() {
+    fetch('/admin/dashboard/data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching dashboard data:', data.error);
+                return;
+            }
+            
+            // Update budget chart
+            updateBudgetChart(data.budgetData);
+            
+            // Update money spent card
+            document.getElementById('totalMoneySpent').textContent = '$' + data.totalMoneySpent.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            document.getElementById('budgetUsageProgress').style.width = data.budgetUsagePercentage + '%';
+            document.getElementById('budgetUsageText').textContent = 
+                data.budgetUsagePercentage.toFixed(2) + '% of total budget used';
+            
+            // Update active labours card
+            const changeIndicator = document.getElementById('attendanceChangeIndicator');
+            const prevCount = parseInt(document.getElementById('activeLaboursCount').textContent) || 0;
+            const newCount = data.activeLaboursCount;
+            
+            document.getElementById('activeLaboursCount').textContent = newCount;
+            document.getElementById('lastAttendanceTime').textContent = 
+                data.lastAttendanceTime || 'No attendance recorded today';
+            
+            // Calculate and show change percentage
+            if (prevCount > 0) {
+                const changePercentage = Math.round(((newCount - prevCount) / prevCount) * 100);
+                changeIndicator.textContent = (changePercentage >= 0 ? '+' : '') + changePercentage + '%';
+                changeIndicator.className = `h1 fw-bold float-end text-${changePercentage >= 0 ? 'success' : 'danger'}`;
+            }
+            
+            // Update attendance trend chart
+            updateAttendanceTrendChart(data.attendanceTrend);
+        })
+        .catch(error => {
+            console.error('Error updating dashboard:', error);
+        });
+}
+
+// Initialize charts and start periodic updates
+document.addEventListener('DOMContentLoaded', function() {
+    initBudgetChart();
+    updateDashboardData();
+    
+    // Update every 30 seconds
+    setInterval(updateDashboardData, 30000);
+    
+    // Also update when the page becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateDashboardData();
+        }
+    });
+});
+// Function to initialize budget chart
+function initBudgetChart() {
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    window.budgetChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Total Budget',
+                    backgroundColor: '#4e73df',
+                    data: []
+                },
+                {
+                    label: 'Used Budget',
+                    backgroundColor: '#1cc88a',
+                    data: []
+                },
+                {
+                    label: 'Remaining Budget',
+                    backgroundColor: '#36b9cc',
+                    data: []
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: false,
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.raw.toLocaleString();
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Function to update budget chart data
+function updateBudgetChart(data) {
+    const labels = data.map(project => project.name);
+    const totalBudgets = data.map(project => project.total_budget);
+    const usedBudgets = data.map(project => project.used_budget);
+    const remainingBudgets = data.map(project => project.remaining_budget);
+    
+    window.budgetChart.data.labels = labels;
+    window.budgetChart.data.datasets[0].data = totalBudgets;
+    window.budgetChart.data.datasets[1].data = usedBudgets;
+    window.budgetChart.data.datasets[2].data = remainingBudgets;
+    window.budgetChart.update();
+}
+
+// Function to update attendance trend chart
+function updateAttendanceTrendChart(data) {
+    // Implement your attendance trend chart update logic here
+    // This could be a line chart showing attendance over time
+}
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initBudgetChart();
+    updateDashboardData();
+    
+    // Set up periodic updates (every 30 seconds)
+    setInterval(updateDashboardData, 30000);
+    
+    // Alternatively, use WebSocket for real-time updates if available
+    // setupWebSocket();
+});
+</script>
   </div>
 </div>
 {% endblock %}
