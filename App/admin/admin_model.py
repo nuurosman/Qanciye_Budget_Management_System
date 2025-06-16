@@ -1555,225 +1555,73 @@ class AdminModel:
             print(f"Error in delete_payment: {e}")
             return (False, str(e))
         
-    # def get_unpaid_wages(self):
-    #     """
-    #     Fetch all unpaid wage records (is_paid = FALSE).
-    #     Returns a list of dicts with wage_id, labour_name, project_name, total_wage.
-    #     """
-    #     try:
-    #         sql = """
-    #         SELECT 
-    #             w.wage_id,
-    #             l.full_name AS labour_name,
-    #             p.name AS project_name,
-    #             w.total_wage,
-    #             w.project_id
-    #         FROM wages w
-    #         JOIN labour l ON w.labour_id = l.labour_id
-    #         JOIN projects p ON w.project_id = p.project_id
-    #         WHERE w.is_paid = FALSE
-    #         """
-    #         dict_cursor = self.connection.cursor(dictionary=True)
-    #         dict_cursor.execute(sql)
-    #         unpaid_wages = dict_cursor.fetchall()
-    #         dict_cursor.close()
-    #         return unpaid_wages
-    #     except Exception as e:
-    #         print(f"Error in get_unpaid_wages: {e}")
-    #         return []
-
-    # def get_unpaid_materials(self):
-    #     """
-    #     Fetch all unpaid material records (is_paid = FALSE).
-    #     Returns a list of dicts with material_id, material_name, total_cost.
-    #     """
-    #     try:
-    #         sql = """
-    #         SELECT 
-    #             m.material_id,
-    #             m.item_name AS material_name,
-    #             m.amount AS total_cost,
-    #             m.project_id
-    #         FROM materials m
-    #         WHERE m.is_paid = FALSE
-    #         """
-    #         dict_cursor = self.connection.cursor(dictionary=True)
-    #         dict_cursor.execute(sql)
-    #         unpaid_materials = dict_cursor.fetchall()
-    #         dict_cursor.close()
-    #         return unpaid_materials
-    #     except Exception as e:
-    #         print(f"Error in get_unpaid_materials: {e}")
-    #         return []
-
-    # def get_unpaid_expenses(self):
-    #     """
-    #     Fetch all unpaid expense records (is_paid = FALSE).
-    #     Returns a list of dicts with expense_id, expense_name, amount.
-    #     """
-    #     try:
-    #         sql = """
-    #         SELECT 
-    #             e.expense_id,
-    #             e.item_name AS expense_name,
-    #             e.amount,
-    #             e.project_id
-    #         FROM expenses e
-    #         WHERE e.is_paid = FALSE
-    #         """
-    #         dict_cursor = self.connection.cursor(dictionary=True)
-    #         dict_cursor.execute(sql)
-    #         unpaid_expenses = dict_cursor.fetchall()
-    #         dict_cursor.close()
-    #         return unpaid_expenses
-    #     except Exception as e:
-    #         print(f"Error in get_unpaid_expenses: {e}")
-    #         return []
-
-
-
-    # get ongoing projects
-    def get_ongoing_projects(self):
-        """Get all ongoing projects with their budget data"""
+    # --- Unpaid Wages/Materials/Expenses for Payment Section ---
+    def get_unpaid_wages(self):
+        """Fetch all unpaid wage records (is_paid = FALSE)."""
         try:
-            cursor = self.connection.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT p.*, se.full_name as site_engineer_name 
-                FROM projects p
-                LEFT JOIN site_engineer se ON p.site_engineer_id = se.site_engineer_id
-                WHERE p.status = 'In Progress'
-            """)
-            result = cursor.fetchall()
-            cursor.close()
-            return True, result
+            sql = """
+            SELECT 
+                w.wage_id,
+                l.full_name AS labour_name,
+                p.name AS project_name,
+                w.total_wage,
+                w.project_id
+            FROM wages w
+            JOIN labour l ON w.labour_id = l.labour_id
+            JOIN projects p ON w.project_id = p.project_id
+            WHERE w.is_paid = FALSE
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            unpaid_wages = dict_cursor.fetchall()
+            dict_cursor.close()
+            return unpaid_wages
         except Exception as e:
-            return False, str(e)
+            print(f"Error in get_unpaid_wages: {e}")
+            return []
 
-    def get_ongoing_projects_with_budget(self):
-        """Get ongoing projects with calculated budget data"""
+    def get_unpaid_materials(self):
+        """Fetch all unpaid material records (is_paid = FALSE)."""
         try:
-            cursor = self.connection.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT 
-                    p.project_id,
-                    p.name,
-                    p.total_budget,
-                    p.used_budget,
-                    p.remaining_budget,
-                    p.status,
-                    se.full_name as site_engineer_name
-                FROM projects p
-                LEFT JOIN site_engineer se ON p.site_engineer_id = se.site_engineer_id
-                WHERE p.status = 'In Progress'
-            """)
-            result = cursor.fetchall()
-            cursor.close()
-            return True, result
+            sql = """
+            SELECT 
+                m.material_id,
+                m.item_name AS material_name,
+                m.amount AS total_cost,
+                m.project_id
+            FROM materials m
+            WHERE m.is_paid = FALSE
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            unpaid_materials = dict_cursor.fetchall()
+            dict_cursor.close()
+            return unpaid_materials
         except Exception as e:
-            return False, str(e)
+            print(f"Error in get_unpaid_materials: {e}")
+            return []
 
-    def get_ongoing_projects_count(self):
-        """Count ongoing projects"""
+    def get_unpaid_expenses(self):
+        """Fetch all unpaid expense records (is_paid = FALSE)."""
         try:
-            cursor = self.connection.cursor()
-            cursor.execute("SELECT COUNT(*) FROM projects WHERE status = 'In Progress'")
-            count = cursor.fetchone()[0]
-            cursor.close()
-            return True, count
+            sql = """
+            SELECT 
+                e.expense_id,
+                e.item_name AS expense_name,
+                e.amount,
+                e.project_id
+            FROM expenses e
+            WHERE e.is_paid = FALSE
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            unpaid_expenses = dict_cursor.fetchall()
+            dict_cursor.close()
+            return unpaid_expenses
         except Exception as e:
-            return False, str(e)
+            print(f"Error in get_unpaid_expenses: {e}")
+            return []
 
-    def get_todays_attendance_count(self, date):
-        """Count distinct labours with attendance today"""
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("""
-                SELECT COUNT(DISTINCT labour_id) 
-                FROM attendance 
-                WHERE DATE(date) = %s
-            """, (date,))
-            count = cursor.fetchone()[0]
-            cursor.close()
-            return True, count
-        except Exception as e:
-            return False, str(e)
-
-    def get_last_attendance(self, date):
-        """Get the most recent attendance record for today"""
-        try:
-            cursor = self.connection.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT * FROM attendance
-                WHERE DATE(date) = %s
-                ORDER BY created_at DESC
-                LIMIT 1
-            """, (date,))
-            result = cursor.fetchone()
-            cursor.close()
-            return True, result
-        except Exception as e:
-            return False, str(e)
-
-    def get_attendance_trend(self, start_date, end_date):
-        """Get daily attendance counts for a date range"""
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("""
-                SELECT DATE(date) as day, COUNT(*) as count
-                FROM attendance
-                WHERE DATE(date) BETWEEN %s AND %s
-                GROUP BY DATE(date)
-                ORDER BY DATE(date)
-            """, (start_date, end_date))
-            result = cursor.fetchall()
-            cursor.close()
-            return True, result
-        except Exception as e:
-            return False, str(e)
-
-    
-
-    def update_project_budgets(self):
-        """
-        Update each project's used_budget and remaining_budget based on
-        the sum of related expenses, wages, and materials.
-        """
-        try:
-            cursor = self.connection.cursor()
-            # Get all project IDs and total budgets
-            cursor.execute("SELECT project_id, total_budget FROM projects")
-            projects = cursor.fetchall()
-            for project in projects:
-                project_id, total_budget = project
-
-                # Sum expenses
-                cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE project_id = %s", (project_id,))
-                expenses_sum = float(cursor.fetchone()[0] or 0)
-
-                # Sum wages
-                cursor.execute("SELECT COALESCE(SUM(total_wage), 0) FROM wages WHERE project_id = %s", (project_id,))
-                wages_sum = float(cursor.fetchone()[0] or 0)
-
-                # Sum materials
-                cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM materials WHERE project_id = %s", (project_id,))
-                materials_sum = float(cursor.fetchone()[0] or 0)
-
-                used_budget = expenses_sum + wages_sum + materials_sum
-                remaining_budget = float(total_budget) - used_budget
-
-                # Update the project
-                cursor.execute(
-                    "UPDATE projects SET used_budget = %s, remaining_budget = %s WHERE project_id = %s",
-                    (used_budget, remaining_budget, project_id)
-                )
-            self.connection.commit()
-            cursor.close()
-            return True, "Budgets updated successfully"
-        except Exception as e:
-            self.connection.rollback()
-            return False, f"Error updating project budgets: {e}"
-    
-   
     # --- Add these methods for admin reports/dashboard metrics ---
 
     def get_total_site_engineers_count(self):
@@ -1819,8 +1667,6 @@ class AdminModel:
             return True, count
         except Exception as e:
             return False, str(e)
-    
-
 
     def get_labour_report(self, project_id='all', site_engineer_id='all'):
         try:
@@ -2140,59 +1986,59 @@ class AdminModel:
             print(f"Error in get_wages_report: {e}")
             return False, str(e)
     
-        def get_attendance_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None):
-            try:
-                query = """
-                    SELECT 
-                        a.attendance_id,
-                        a.date,
-                        a.status,
-                        a.is_paid,
-                        l.labour_id,
-                        l.full_name as labour_name,
-                        p.project_id,
-                        p.name as project_name,
-                        se.site_engineer_id,
-                        se.full_name as site_engineer_name,
-                        se.email as site_engineer_email
-                    FROM attendance a
-                    LEFT JOIN labour l ON a.labour_id = l.labour_id
-                    LEFT JOIN projects p ON a.project_id = p.project_id
-                    LEFT JOIN site_engineer se ON a.site_engineer_id = se.site_engineer_id
-                """
+    def get_attendance_report(self, project_id='all', site_engineer_id='all', start_date=None, end_date=None):
+        try:
+            query = """
+                SELECT 
+                    a.attendance_id,
+                    a.date,
+                    a.status,
+                    a.is_paid,
+                    l.labour_id,
+                    l.full_name as labour_name,
+                    p.project_id,
+                    p.name as project_name,
+                    se.site_engineer_id,
+                    se.full_name as site_engineer_name,
+                    se.email as site_engineer_email
+                FROM attendance a
+                LEFT JOIN labour l ON a.labour_id = l.labour_id
+                LEFT JOIN projects p ON a.project_id = p.project_id
+                LEFT JOIN site_engineer se ON a.site_engineer_id = se.site_engineer_id
+            """
+            
+            conditions = []
+            params = []
+            
+            if project_id != 'all':
+                conditions.append("a.project_id = %s")
+                params.append(project_id)
                 
-                conditions = []
-                params = []
+            if site_engineer_id != 'all':
+                conditions.append("a.site_engineer_id = %s")
+                params.append(site_engineer_id)
                 
-                if project_id != 'all':
-                    conditions.append("a.project_id = %s")
-                    params.append(project_id)
-                    
-                if site_engineer_id != 'all':
-                    conditions.append("a.site_engineer_id = %s")
-                    params.append(site_engineer_id)
-                    
-                if start_date:
-                    conditions.append("a.date >= %s")
-                    params.append(start_date)
-                    
-                if end_date:
-                    conditions.append("a.date <= %s")
-                    params.append(end_date)
-                    
-                if conditions:
-                    query += " WHERE " + " AND ".join(conditions)
-                    
-                query += " ORDER BY a.date DESC"
-                    
-                cursor = self.connection.cursor(dictionary=True)
-                cursor.execute(query, params)
-                result = cursor.fetchall()
-                cursor.close()
-                return True, result
-            except Exception as e:
-                print(f"Error getting attendance report: {e}")
-                return False, str(e)
+            if start_date:
+                conditions.append("a.date >= %s")
+                params.append(start_date)
+                
+            if end_date:
+                conditions.append("a.date <= %s")
+                params.append(end_date)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += " ORDER BY a.date DESC"
+                
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            cursor.close()
+            return True, result
+        except Exception as e:
+            print(f"Error getting attendance report: {e}")
+            return False, str(e)
 
     def get_labour_report(self, project_id='all', site_engineer_id='all'):
         try:

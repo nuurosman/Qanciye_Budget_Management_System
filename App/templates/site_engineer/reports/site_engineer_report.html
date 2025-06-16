@@ -1,10 +1,21 @@
 {% extends 'admin/base.html' %}
+{% block breadcrumbs %}
+<div class="container-lg  ">
+<nav aria-label="breadcrumb" class="mt-5 me-4">
+  <ol class="breadcrumb bg-light px-3 py-2 rounded mt-3">
+         <i class="bi bi-house-door-fill me-1  fs-4  " style="margin-left: 1rem;"></i>
 
+    <li class="breadcrumb-item  fs-4 "><a href="{{ url_for('site_engineer_dashboard') }} ">Home</a></li>
+    <li class="breadcrumb-item active  fs-4  fw-bold" aria-current="page">All Project Report</li>
+  </ol>
+</nav>
+</div>
+{% endblock %}
 {% block content %}
-<div class="container-lg mt-5">
-    <h1 class="mb-4">All Project Report</h1>
+<div class="container-lg mt-4">
+   
     <!-- Summary Cards -->
-    <div class="row">
+    <div class="row justify-content-center mb-4 me-3 ms-3">
         <div class="col-sm-6 col-md-3">
             <div class="card card-stats card-round">
                 <div class="card-body">
@@ -90,7 +101,7 @@
             </div>
         </div>
     </div>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mb-4 me-3 ms-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
@@ -202,7 +213,7 @@
         </div>
     </div>
 
-    <div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mb-4 me-3 ms-3 mt-5">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">

@@ -398,7 +398,11 @@ def delete_labour(labour_id):
 def site_engineerManage():
     """Render the registration form with user data."""
     success, result = adminmodel.get_all_siteEngineers()
-    # print("Users passed to template:", result)  # Print the result in the console
+    # Ensure result is a list of dicts
+    if success and result and isinstance(result, list) and not isinstance(result[0], dict):
+        # Convert list of tuples to list of dicts if needed
+        keys = ['site_engineer_id', 'full_name', 'email', 'created_at']
+        result = [dict(zip(keys, row)) for row in result]
     if success:
         return render_template('admin/site_engineerManage.html', users=result)
     else:
@@ -461,17 +465,23 @@ def get_site_engineers_with_projects():
 def get_projects_for_site_engineer(site_engineer_id):
     success, projects = adminmodel.get_projects_for_site_engineer(site_engineer_id)
     if success:
-        return jsonify({"projects": projects}), 200
+        # projects is a list of tuples or dicts, handle both
+        return jsonify({"success": True, "projects": [
+            {"id": p[0], "name": p[1]} if isinstance(p, (list, tuple)) else {"id": p["project_id"], "name": p["name"]}
+            for p in projects
+        ]}), 200
     else:
-        return jsonify({"error": "Failed to fetch projects"}), 500
+        return jsonify({"success": False, "message": "Failed to fetch projects"}), 500
 
 @app.route('/get_site_engineers', methods=['GET'])
 def get_site_engineers():
     """Fetch all site engineers."""
     success, site_engineers = adminmodel.get_all_siteEngineers()
     if success:
-        # site_engineers is a list of tuples (id, name)
-        return jsonify({"success": True, "site_engineers": [{"id": se[0], "name": se[1]} for se in site_engineers]}), 200
+        # site_engineers is a list of dicts
+        return jsonify({"success": True, "site_engineers": [
+            {"id": se["site_engineer_id"], "name": se["full_name"]} for se in site_engineers
+        ]}), 200
     else:
         return jsonify({"success": False, "message": "Failed to fetch site engineers"}), 500
 
@@ -480,7 +490,11 @@ def get_projects_by_site_engineer(site_engineer_id):
     """Fetch projects assigned to a specific site engineer."""
     success, projects = adminmodel.get_projects_for_site_engineer(site_engineer_id)
     if success:
-        return jsonify({"success": True, "projects": [{"id": p[0], "name": p[1]} for p in projects]}), 200
+        # projects is a list of tuples or dicts, handle both
+        return jsonify({"success": True, "projects": [
+            {"id": p[0], "name": p[1]} if isinstance(p, (list, tuple)) else {"id": p["project_id"], "name": p["name"]}
+            for p in projects
+        ]}), 200
     else:
         return jsonify({"success": False, "message": "Failed to fetch projects"}), 500
 

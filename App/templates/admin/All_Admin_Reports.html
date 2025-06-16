@@ -1,9 +1,38 @@
 {% extends '/admin/base.html' %}
 
+
+{% block breadcrumbs %}
+<div class="container-lg d-flex justify-content-between align-items-center">
+
+<nav aria-label="breadcrumb" class="mt-5 me-4">
+  <ol class="breadcrumb bg-light px-3 py-2 rounded mt-3">
+         <i class="bi bi-house-door-fill me-1  fs-4  " style="margin-left: 1rem;"></i>
+
+    <li class="breadcrumb-item  fs-4 "><a href="{{ url_for('dashboard') }} ">Home</a></li>
+    <li class="breadcrumb-item active  fs-4  fw-bold" aria-current="page">All Admin Report</li>
+  </ol>
+</nav>
+<!-- <div class="add-btn position-relative mt-5 me-4">
+  <button type="button" 
+          class="btn  btn-outline-primary btn-round btn-add-user shadow-md"
+          data-bs-toggle="modal"
+          data-bs-target="#registrationModal">
+    <span class="btn-content">
+      <i class="bi bi-plus-circle me-2"></i> Add User
+    </span>
+    <span class="btn-pulse"></span>
+  </button>
+</div> -->
+</div>
+
+
+{% endblock %}
+
+
 {% block content %}
-<div class="container-fluid">
+<div class="container-lg ">
     <!-- Dashboard Cards -->
-    <div class="row">
+    <div class="row justify-content-center me-3 ms-3">
         <!-- Total Budget -->
         <div class="col-md-3 mb-4">
             <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
@@ -25,7 +54,7 @@
 
         <!-- Remaining Budget -->
         <div class="col-md-3 mb-4">
-            <div class="card card-success bg-success bg-gradient bubble-shadow-small">
+            <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
                 <div class="card-body bubble-shadow position-relative">
                     <i class="bi bi-wallet2 fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
                     <div class="text-center mt-5 pt-2">
@@ -44,7 +73,7 @@
 
         <!-- Used Budget -->
         <div class="col-md-3 mb-4">
-            <div class="card card-warning bg-warning bg-gradient bubble-shadow-small">
+            <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
                 <div class="card-body bubble-shadow position-relative">
                     <i class="bi bi-cash-stack fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
                     <div class="text-center mt-5 pt-2">
@@ -63,7 +92,7 @@
 
         <!-- Ongoing Projects -->
         <div class="col-md-3 mb-4">
-            <div class="card card-info bg-info bg-gradient bubble-shadow-small">
+            <div class="card card-primary bg-primary bg-gradient bubble-shadow-small">
                 <div class="card-body bubble-shadow position-relative">
                     <i class="bi bi-building fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
                     <div class="text-center mt-5 pt-2">
@@ -75,10 +104,25 @@
                 </div>
             </div>
         </div>
+
+
+          <div class="col-md-3 mb-4">
+    <!-- <div class="card card-secondary bg-purple bg-gradient">
+      <div class="card-body skew-shadow position-relative">
+        <i class="bi bi-kanban-fill fs-2 position-absolute top-0 start-0 m-3 text-white"></i>
+        <div class="text-center mt-5 pt-2">
+          <h1 class="display-5 text-white">
+              {{ projects|selectattr('status', 'equalto', 'ongoing')|list|length }}
+          </h1>
+          <p class="text-white mb-0">Ongoing Projects</p>
+        </div>
+      </div>
+    </div> -->
+  </div>
     </div>
 
     <!-- Report Filters -->
-    <div class="row justify-content-center">
+    <div class="row justify-content-center me-3 ms-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
@@ -195,7 +239,7 @@
     </div>
 
     <!-- Report Results -->
-    <div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mt-5 me-3 ms-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
