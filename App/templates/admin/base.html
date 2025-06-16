@@ -143,6 +143,46 @@
                 </ul>
               </div>
             </li>
+
+                     <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#transaction">
+                <i class="bi bi-clipboard-check"></i>
+                <p>Assign Work to Labour</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="transaction">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="{{url_for('manage_labour_project')}}">
+                      <span class="sub-item">Assigne Labour Project</span>
+                    </a>
+                  </li>
+         
+          
+                </ul>
+              </div>
+            </li>
+
+
+                 <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#ManageAttendance">
+                <i class="bi bi-clock"></i>
+                <!-- <i class="bi bi-calendar-check"></i> -->
+                <p>Manage Attendance</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="ManageAttendance">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="{{url_for('manage_attendance')}}">
+                      <span class="sub-item">Attendance</span>
+                    </a>
+                  </li>
+          
+                </ul>
+              </div>
+            </li>
+
             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#employees">
                 <i class="bi bi-bricks"></i>
@@ -162,42 +202,8 @@
             </li>
              
      
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#transaction">
-                <i class="bi bi-clipboard-check"></i>
-                <p>Assign Work to Labour</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="transaction">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="{{url_for('manage_labour_project')}}">
-                      <span class="sub-item">Assigne Labour Project</span>
-                    </a>
-                  </li>
-         
-          
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#ManageAttendance">
-                <i class="bi bi-clock"></i>
-                <!-- <i class="bi bi-calendar-check"></i> -->
-                <p>Manage Attendance</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="ManageAttendance">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="{{url_for('manage_attendance')}}">
-                      <span class="sub-item">Attendance</span>
-                    </a>
-                  </li>
-          
-                </ul>
-              </div>
-            </li>
+   
+       
             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#wages">
                 <i class="bi bi-cash-coin"></i>
@@ -232,7 +238,7 @@
               </div>
             </li>
 
-                <li class="nav-item">
+             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#payment">
              <i class="bi bi-currency-dollar"></i>
               <!-- <i class="bi bi-paypal"></i> -->
@@ -251,11 +257,10 @@
                 </ul>
               </div>
             </li>
-
-  
+      
             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#track_budget">
-                <i class="bi bi-graph-up-arrow"></i>
+                <i class="bi bi-wallet2"></i>
                 <p>Manage Budget Tracking</p>
                 <span class="caret"></span>
               </a>
@@ -271,6 +276,8 @@
                 </ul>
               </div>
             </li>
+
+                     
 
                       <li class="nav-item">
               <a data-bs-toggle="collapse" href="#report">

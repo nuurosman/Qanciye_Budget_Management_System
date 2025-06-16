@@ -106,16 +106,14 @@ class AdminModel:
     # Get all the site Engineers
     def get_all_siteEngineers(self):
         try:
-            with self.connection.cursor() as cursor:
-                # Clear any unread results
-                while self.connection.unread_result:
-                    self.connection.get_rows()
-                    
-                cursor.execute("SELECT site_engineer_id, full_name, email, created_at FROM site_engineer")
-                return True, cursor.fetchall()
+            dict_cursor = self.connection.cursor(dictionary=True)
+            sql = "SELECT site_engineer_id, full_name FROM site_engineer"
+            dict_cursor.execute(sql)
+            site_engineers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, site_engineers
         except Exception as e:
-            print(f"Error: {e}")
-            return False, str(e)
+            return False, f"Error: {e}"
 
 
 
@@ -257,76 +255,32 @@ class AdminModel:
 
     # Get all Labours
     def get_all_labours(self):
-        """Fetches all Labours from the database."""
+        """Fetches all Labours from the database as a list of dicts with id and name for dropdowns."""
         try:
-            sql = "SELECT labour_id, full_name, email,type_of_work, created_at FROM labour"
+            sql = "SELECT labour_id, full_name FROM labour"
             self.cursor.execute(sql)
-            result = self.cursor.fetchall()  # Returns a list of dictionaries
-            return True, result
+            rows = self.cursor.fetchall()
+            # Always return a list of dicts with id and name
+            labours = [{"labour_id": row[0], "full_name": row[1]} for row in rows]
+            return True, labours
         except Exception as e:
             print(f"Error fetching labour model: {e}")
             return False, f"Error: {e}"
 
-    #Update labour
-    
-    def update_labour(self, labour_id, full_name, email, password):
-        """Updates an update_labour information in the database."""
+    # Get all Projects
+    def get_all_projects(self):
+        """Fetch all projects as a list of dicts with id and name for dropdowns."""
         try:
-            # If password is provided, update it; otherwise, skip password update
-            if password:
-                hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Ensure password is hashed
-                sql = """
-                UPDATE labour
-                SET full_name = %s, email = %s, password = %s
-                WHERE labour_id= %s
-                """
-                self.cursor.execute(sql, (full_name, email, hashed_password, labour_id))
-            else:
-                sql = """
-                UPDATE labour
-                SET full_name = %s, email = %s
-                WHERE labour_id= %s
-                """
-                self.cursor.execute(sql, (full_name, email, labour_id))
+            sql = "SELECT project_id, name FROM projects"
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
+            projects = [{"project_id": row[0], "name": row[1]} for row in rows]
+            return True, projects
+        except Exception as e:
+            print(f"Error in get_all_projects: {e}")
+            return False, f"Error: {e}"
 
-            self.connection.commit()  # Commit the changes using the correct connection attribute
-            print(f"Update successful for labour_id={labour_id}")
-            return True, "Labour updated successfully"
-        except Exception as e:
-            print(f"Error updating labour_id={labour_id}: {e}")
-            return False, f"Error: {e}"
-    
-    def check_references(self, labour_id, tables):
-        """Checks if a labour is referenced in the given tables."""
-        try:
-            for table in tables:
-                sql_check = f"SELECT COUNT(*) AS total_references FROM {table} WHERE labour_id = %s"
-                self.cursor.execute(sql_check, (labour_id,))
-                result = self.cursor.fetchone()
-
-                # Access the count by index (first element in the tuple)
-                if result[0] > 0:
-                    return False, f"labour is referenced in {table}."
-            return True, "No references found."
-        except Exception as e:
-            print(f"Error checking references for labour: {e}")
-            return False, f"Error: {e}"
-    
-        
-    # Delete labour
-    def delete_labour(self, labour_id):
-        """Deletes a labour record from the database."""
-        try:
-            sql = "DELETE FROM labour WHERE labour_id = %s"
-            self.cursor.execute(sql, (labour_id,))
-            self.connection.commit()
-            print(f"Labour with ID {labour_id} deleted successfully")
-            return True, "Labour deleted successfully"
-        except Exception as e:
-            print(f"Error deleting labour_id={labour_id}: {e}")
-            return False, f"Error: {e}"
-    
-    # Project site
+    #Project site
       # Register a new project
     def register_project(self, name, description, start_date, end_date, total_budget, material_budget, wages_budget, other_expenses_budget, status, site_engineer_id, admin_id):
         try:
@@ -2066,6 +2020,7 @@ class AdminModel:
             conditions = []
             params = []
             
+                       
             if project_id != 'all':
                 conditions.append("lp.project_id = %s")
                 params.append(project_id)

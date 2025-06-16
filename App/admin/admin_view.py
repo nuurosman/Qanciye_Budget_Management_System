@@ -398,11 +398,7 @@ def delete_labour(labour_id):
 def site_engineerManage():
     """Render the registration form with user data."""
     success, result = adminmodel.get_all_siteEngineers()
-    # Ensure result is a list of dicts
-    if success and result and isinstance(result, list) and not isinstance(result[0], dict):
-        # Convert list of tuples to list of dicts if needed
-        keys = ['site_engineer_id', 'full_name', 'email', 'created_at']
-        result = [dict(zip(keys, row)) for row in result]
+    # print("Users passed to template:", result)  # Print the result in the console
     if success:
         return render_template('admin/site_engineerManage.html', users=result)
     else:
@@ -465,23 +461,17 @@ def get_site_engineers_with_projects():
 def get_projects_for_site_engineer(site_engineer_id):
     success, projects = adminmodel.get_projects_for_site_engineer(site_engineer_id)
     if success:
-        # projects is a list of tuples or dicts, handle both
-        return jsonify({"success": True, "projects": [
-            {"id": p[0], "name": p[1]} if isinstance(p, (list, tuple)) else {"id": p["project_id"], "name": p["name"]}
-            for p in projects
-        ]}), 200
+        return jsonify({"projects": projects}), 200
     else:
-        return jsonify({"success": False, "message": "Failed to fetch projects"}), 500
+        return jsonify({"error": "Failed to fetch projects"}), 500
 
 @app.route('/get_site_engineers', methods=['GET'])
 def get_site_engineers():
     """Fetch all site engineers."""
     success, site_engineers = adminmodel.get_all_siteEngineers()
     if success:
-        # site_engineers is a list of dicts
-        return jsonify({"success": True, "site_engineers": [
-            {"id": se["site_engineer_id"], "name": se["full_name"]} for se in site_engineers
-        ]}), 200
+        # site_engineers is a list of tuples (id, name)
+        return jsonify({"success": True, "site_engineers": [{"id": se[0], "name": se[1]} for se in site_engineers]}), 200
     else:
         return jsonify({"success": False, "message": "Failed to fetch site engineers"}), 500
 
@@ -490,11 +480,7 @@ def get_projects_by_site_engineer(site_engineer_id):
     """Fetch projects assigned to a specific site engineer."""
     success, projects = adminmodel.get_projects_for_site_engineer(site_engineer_id)
     if success:
-        # projects is a list of tuples or dicts, handle both
-        return jsonify({"success": True, "projects": [
-            {"id": p[0], "name": p[1]} if isinstance(p, (list, tuple)) else {"id": p["project_id"], "name": p["name"]}
-            for p in projects
-        ]}), 200
+        return jsonify({"success": True, "projects": [{"id": p[0], "name": p[1]} for p in projects]}), 200
     else:
         return jsonify({"success": False, "message": "Failed to fetch projects"}), 500
 
@@ -726,13 +712,38 @@ def get_dropdown_data():
     success_lb, labours = adminmodel.get_all_labours()
     success_pr, projects = adminmodel.get_all_projects()
 
-    if success_se and success_ad and success_lb and success_pr:
-        site_engineers_list = [{"id": se[0], "name": se[1]} for se in site_engineers]
-        admins_list = [{"id": admin[0], "name": admin[1]} for admin in admins]
-        labours_list = [{"id": labour[0], "name": labour[1]} for labour in labours]
-        # Fix: Use dict keys for projects
-        projects_list = [{"id": project["project_id"], "name": project["name"]} for project in projects]
+    def extract_id_name(item):
+        # Handles both tuple and dict
+        if isinstance(item, dict):
+            # Try common keys
+            for id_key in ['site_engineer_id', 'admin_id', 'labour_id', 'project_id']:
+                if id_key in item:
+                    break
+            else:
+                id_key = next(iter(item.keys()))
+            for name_key in ['full_name', 'name']:
+                if name_key in item:
+                    break
+            else:
+                name_key = next(iter(item.keys()))
+            return {"id": item[id_key], "name": item.get(name_key, "")}
+        elif isinstance(item, (list, tuple)):
+            # Assume id is first, name is second
+            return {"id": item[0], "name": item[1]}
+        else:
+            return {"id": None, "name": ""}
 
+    if success_se and success_ad and success_lb and success_pr:
+        site_engineers_list = [extract_id_name(se) for se in site_engineers]
+        admins_list = [extract_id_name(admin) for admin in admins]
+        labours_list = [extract_id_name(labour) for labour in labours]
+        # For projects, ensure dict with 'project_id' and 'name'
+        projects_list = []
+        for project in projects:
+            if isinstance(project, dict):
+                projects_list.append({"id": project.get("project_id") or project.get("id"), "name": project.get("name")})
+            elif isinstance(project, (list, tuple)):
+                projects_list.append({"id": project[0], "name": project[1]})
         return jsonify({
             "site_engineers": site_engineers_list,
             "admins": admins_list,
