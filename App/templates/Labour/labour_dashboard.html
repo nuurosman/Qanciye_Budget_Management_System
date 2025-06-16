@@ -1,13 +1,24 @@
 {% extends '/admin/base.html' %}
-
+{% block breadcrumbs %}
+<div class="container-lg  ">
+<nav aria-label="breadcrumb" class="mt-5 me-5">
+  <ol class="breadcrumb bg-light px-3 py-2 rounded align-items-center" style="margin-bottom: 0;">
+    <li class="breadcrumb-item active d-flex align-items-center justify-content-center aria-current="page">
+      <i class="bi bi-house-door-fill me-1  fs-3  " style="margin-left: 1rem;"></i>
+       <h2 class="fw-bold fs-3 mt-2 ">Labour Dashboard</h2>
+    </li>
+  </ol>
+</nav>
+</div>
+{% endblock %}
 {% block content %}
 <div class="container">
   <div class="page-inner">
-    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+    <!-- <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
       <div>
         <h3 class="fw-bold mb-3">Labour Dashboard</h3>
       </div>
-    </div>
+    </div> -->
     
     <!-- Summary Cards -->
     <div class="row row-card-no-pd">
