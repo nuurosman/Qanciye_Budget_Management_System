@@ -313,7 +313,7 @@ def delete_admin(admin_id):
 @app.route('/admin/LabourManage')
 def labour_Manage():
     """Render the labour list form with user data."""
-    success, result = adminmodel.get_all_labours()
+    success, result = adminmodel.get_all_labours_full()
     print("Labours passed to template:", result)  # Print the result in the console
     if success:
         return render_template('/admin/labourManage.html', users=result)
@@ -628,7 +628,7 @@ def register_project():
         name, description, start_date, end_date, total_budget, material_budget, wages_budget, other_expenses_budget, status, site_engineer_id, admin_id
     )
     # If validation fails, return 400 with the message
-    return jsonify({"success": success, "message": message}), 201 if success else 400
+    return jsonify({"success": success, "message": message}), (201 if success else 400)
 
 # Fetch and display projects
 @app.route('/admin/projectManage')

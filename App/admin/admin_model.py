@@ -267,6 +267,18 @@ class AdminModel:
             print(f"Error fetching labour model: {e}")
             return False, f"Error: {e}"
 
+    # Get all Labours (for admin/labourManage.html, returns all columns as tuples)
+    def get_all_labours_full(self):
+        """Fetches all Labours from the database as a list of tuples (for admin/labourManage.html)."""
+        try:
+            sql = "SELECT labour_id, full_name, email, type_of_work, created_at FROM labour"
+            self.cursor.execute(sql)
+            rows = self.cursor.fetchall()
+            return True, rows
+        except Exception as e:
+            print(f"Error fetching all labours (full): {e}")
+            return False, f"Error: {e}"
+
     # Get all Projects
     def get_all_projects(self):
         """Fetch all projects as a list of dicts with id and name for dropdowns."""
@@ -2001,6 +2013,7 @@ class AdminModel:
                     l.labour_id,
                     l.full_name,
                     l.email,
+
                     l.phone,
                     l.type_of_work,
                     l.daily_rate,
