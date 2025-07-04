@@ -38,12 +38,14 @@
             style="width: 25rem; max-height: fit-content;">
             <div class="logo-image text-center">
               <img src="{{ url_for('static', filename='images/Qanciye.png') }}" alt="Logo"
-                style="width: 100px; height: auto;">
+                style="width: 150px; height: auto;">
             </div>
             <div class="text-center mb-4">
               <h2 style="color: #213F72;">Sign in</h2>
             </div>
 
+
+            <div class="alert alert-danger text-center" role="alert" id="errorMessage" style="display: none;"></div>
             <div class="input-group flex-nowrap mb-4">
               <span class="input-group-text" id="email-addon"><i class="bi bi-envelope-fill"></i></span>
               <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"
@@ -59,7 +61,8 @@
                 </span>
             </div>
 
-            <div class="input-group flex-nowrap mb-2">
+            <div class="input-group flex-nowrap mb-4">
+   
               <select class="form-select" id="role" name="user_type" aria-label="user_type"
                 aria-describedby="addon-wrapping" required>
                 <option value="" disabled selected>Select role</option>
@@ -69,21 +72,24 @@
               </select>
             </div>
 
-            <div class="d-grid text-center mb-3">
-             <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+        
+
+            
+
+            <div class="d-grid">
+              <button class="btn  mb-4" style="background-color: #213F72; color: white;" type="submit">Sign in</button>
+            </div>
+
+            
+                <div class="d-grid text-center mb-3" >
+             <a href="{{ url_for('forgot_password') }}" style="color: #213F72;">Forgot Password?</a>
               
             </div>
 
-            <div class="alert alert-danger text-center" role="alert" id="errorMessage" style="display: none;"></div>
-
-            <div class="d-grid">
-              <button class="btn btn-primary" type="submit">Sign in</button>
-            </div>
-
-            <hr />
-            <div class="modal-footer">
+            <!-- <hr /> -->
+            <!-- <div class="modal-footer">
               <a href="#" class="btn btn-secondary">Close</a>
-            </div>
+            </div> -->
           </form>
         </div>
       </div>

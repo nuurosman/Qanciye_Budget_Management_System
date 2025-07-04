@@ -105,8 +105,8 @@
                         <td>{{ expense.created_at.strftime('%Y-%m-%d') if expense.created_at else '' }}</td>
                         <td style="display: flex; gap: 3px;">
                             <!-- Edit Button -->
-                            <button class="btn btn-sm btn-warning edit-expense"
-                                data-bs-toggle="modal" data-bs-target="#updateExpensesModal"
+                            <button class="btn btn-sm text-white edit-expense" style="background-color: #213F72;"
+                                data-bs-toggle="modal"  data-bs-target="#updateExpensesModal"
                                 data-expense-id="{{ expense.expense_id }}"
                                 data-item-name="{{ expense.item_name }}"
                                 data-amount="{{ expense.amount }}"
@@ -116,7 +116,7 @@
                                 <i class="bi bi-pencil-square text-white"></i>
                             </button>
                             <!-- Delete Button -->
-                            <button type="button" class="btn btn-sm btn-danger delete-button" data-expense-id="{{ expense.expense_id }}">
+                            <button type="button" class="btn btn-sm text-white delete-button"  style="background-color: #BF1F50;" data-expense-id="{{ expense.expense_id }}">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                         </td>

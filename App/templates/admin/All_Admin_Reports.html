@@ -670,7 +670,7 @@
                                 </tfoot>
                                 {% endif %}
                             </table>
-                            {% elif report_type == 'labour' %}
+                     {% elif report_type == 'labour' %}
     <!-- Labour Report Table -->
     <table id="reportTable" class="table table-bordered table-hover">
         <thead class="sticky-top bg-light">
@@ -689,7 +689,7 @@
                 <td>{{ labour.full_name }}</td>
                 <td>{{ labour.phone }}</td>
                 <td>{{ labour.project_name if labour.project_name else 'Not Assigned' }}</td>
-                <td>{{ "%.2f"|format(labour.daily_rate) if labour.daily_rate else '0.00' }}</td>
+                <td>{{ "%.2f"|format(labour.daily_rate|float) if labour.daily_rate else '0.00' }}</td>
                 <td>{{ labour.assigned_date.strftime('%Y-%m-%d') if labour.assigned_date else 'N/A' }}</td>
                 <td>{{ labour.site_engineer_name if labour.site_engineer_name else 'N/A' }}</td>
             </tr>
@@ -703,7 +703,7 @@
         <tfoot>
             <tr class="table-info">
                 <td colspan="5" class="text-right"><strong>Total Labours:</strong></td>
-                <td><strong>{{ totals.count }}</strong></td>
+                <td><strong>{{ report_data|length }}</strong></td>
             </tr>
         </tfoot>
         {% endif %}
@@ -740,7 +740,7 @@
         <tfoot>
             <tr class="table-info">
                 <td colspan="2" class="text-right"><strong>Total Records:</strong></td>
-                <td><strong>{{ totals.count }}</strong></td>
+                <td><strong>{{ report_data|length }}</strong></td>
                 <td colspan="2"></td>
             </tr>
         </tfoot>
