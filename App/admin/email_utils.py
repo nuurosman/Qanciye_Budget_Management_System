@@ -11,6 +11,29 @@ def create_app():
     mail.init_app(app)
     return app
 
+
+def send_announcement_email(to_email, title, message, project_name, scheduled_date):
+    app = create_app()  # Ensure app context is available
+    with app.app_context():
+        msg = Message(
+            subject=f"Work Announcement: {title}",
+            recipients=[to_email],
+            sender=app.config['MAIL_DEFAULT_SENDER']
+        )
+        msg.html = f"""
+        <h2>New Work Announcement</h2>
+        <p><strong>Project:</strong> {project_name}</p>
+        <p><strong>Scheduled Date:</strong> {scheduled_date}</p>
+        <p><strong>Message:</strong></p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+            {message}
+        </div>
+        <p>Please contact your supervisor if you have any questions.</p>
+        <hr>
+        <p>This is an automated message. Please do not reply directly to this email.</p>
+        """
+        mail.send(msg)
+
 def send_reset_email(to_email, token):
     app = create_app()
     with app.app_context():

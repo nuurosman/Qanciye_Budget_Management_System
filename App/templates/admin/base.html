@@ -280,6 +280,26 @@
                      
 
                       <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#labour_announcements">
+               <i class="bi bi-megaphone-fill"></i>
+                <p>Manage Announcements</p>
+                <span class="caret"></span>
+              </a>
+
+              <div class="collapse" id="labour_announcements">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="{{url_for('manage_announcements')}}">
+                      <span class="sub-item">Labour Announcements</span>
+                    </a>
+                  </li>
+     
+                </ul>
+              </div>
+            </li>
+
+            
+                      <li class="nav-item">
               <a data-bs-toggle="collapse" href="#report">
                <i class="bi bi-graph-up"></i>
                 <p>Reports</p>
@@ -400,6 +420,27 @@
                 </ul>
               </div>
             </li>
+           
+    
+                      <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#manage_siteEngineer_labourannouncements">
+               <i class="bi bi-megaphone-fill"></i>
+                <p>Manage Announcements</p>
+                <span class="caret"></span>
+              </a>
+
+              <div class="collapse" id="manage_siteEngineer_labourannouncements">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="{{url_for('siteEngineer_manage_announcements')}}">
+                      <span class="sub-item">Labour Announcements</span>
+                    </a>
+                  </li>
+     
+                </ul>
+              </div>
+            </li>
+
            
             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#reports">

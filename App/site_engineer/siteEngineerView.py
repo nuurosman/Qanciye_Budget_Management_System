@@ -6,6 +6,7 @@ import traceback
 from App.configuration import UserDbConnection
 import base64
 from datetime import datetime, timedelta
+from App.admin.email_utils import send_announcement_email
 
 
 
@@ -1446,9 +1447,6 @@ app.secret_key = 'your_secret_key_here'
 #             columns=columns
 #         )
 #     except Exception as e:
-#         print(f"Error loading financial report: {e}")
-#         flash("An error occurred while loading the report.", "danger")
-#         return redirect('/site_engineer/dashboard')
 #         print(f"Error loading financial report: {e}")
 #         flash("An error occurred while loading the report.", "danger")
 #         return redirect('/site_engineer/dashboard')

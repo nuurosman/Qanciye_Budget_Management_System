@@ -107,7 +107,7 @@ class AdminModel:
     def get_all_siteEngineers(self):
         try:
             dict_cursor = self.connection.cursor(dictionary=True)
-            sql = "SELECT site_engineer_id, full_name, email, created_at FROM site_engineer"
+            sql = "SELECT site_engineer_id, full_name FROM site_engineer"
             dict_cursor.execute(sql)
             site_engineers = dict_cursor.fetchall()
             dict_cursor.close()
@@ -2146,3 +2146,149 @@ class AdminModel:
         except Exception as e:
             print(f"Error in get_labour_report: {e}")
             return False, str(e)
+    
+
+
+    # Mail and Sender code
+
+    def create_announcement(self, project_id, labour_id, admin_id, title, message, scheduled_date, sent_by='admin'):
+        try:
+            sql = """
+            INSERT INTO labour_announcements 
+            (labour_id, project_id, admin_id, title, message, scheduled_date, sent_by, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+            """
+            self.cursor.execute(sql, (
+                labour_id, 
+                project_id, 
+                admin_id, 
+                title, 
+                message, 
+                scheduled_date, 
+                sent_by
+            ))
+            self.connection.commit()
+            return True, "Announcement created successfully"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error creating announcement: {str(e)}"
+
+    def get_all_announcements(self):
+        try:
+            sql = """
+            SELECT la.id, la.title, la.message, la.scheduled_date, la.sent_by, la.created_at,
+                    p.name as project_name, p.project_id,
+                    l.full_name as labour_name, l.labour_id, l.email as labour_email,
+                    a.full_name as admin_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN admin a ON la.admin_id = a.admin_id
+            ORDER BY la.created_at DESC
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            announcements = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, announcements
+        except Exception as e:
+            return False, f"Error fetching announcements: {str(e)}"
+
+    def get_announcement_by_id(self, announcement_id):
+        try:
+            sql = """
+            SELECT la.*, p.name as project_name, l.full_name as labour_name, l.email as labour_email
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            WHERE la.id = %s
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (announcement_id,))
+            announcement = dict_cursor.fetchone()
+            dict_cursor.close()
+            if announcement:
+                return True, announcement
+            else:
+                return False, "Announcement not found"
+        except Exception as e:
+            return False, f"Error fetching announcement: {str(e)}"
+
+    def update_announcement(self, announcement_id, project_id, labour_id, title, message, scheduled_date):
+        try:
+            sql = """
+            UPDATE labour_announcements 
+            SET project_id = %s, 
+                labour_id = %s, 
+                title = %s, 
+                message = %s, 
+                scheduled_date = %s
+            WHERE id = %s
+            """
+            self.cursor.execute(sql, (
+                project_id, 
+                labour_id, 
+                title, 
+                message, 
+                scheduled_date, 
+                announcement_id
+            ))
+            self.connection.commit()
+            return True, "Announcement updated successfully"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error updating announcement: {str(e)}"
+
+    def delete_announcement(self, announcement_id):
+        try:
+            sql = "DELETE FROM labour_announcements WHERE id = %s"
+            self.cursor.execute(sql, (announcement_id,))
+            self.connection.commit()
+            if self.cursor.rowcount > 0:
+                return True, "Announcement deleted successfully"
+            else:
+                return False, "Announcement not found"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error deleting announcement: {str(e)}"
+
+    def get_labourers(self):
+        try:
+            sql = "SELECT labour_id, full_name, email FROM labour ORDER BY full_name"
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers: {str(e)}"
+
+    def get_projects(self):
+        try:
+            sql = "SELECT project_id, name FROM projects ORDER BY name"
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            projects = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, projects
+        except Exception as e:
+            return False, f"Error fetching projects: {str(e)}"
+    
+
+    def get_labourers_by_project(self, project_id):
+        try:
+            sql = """
+            SELECT l.labour_id, l.full_name, l.email 
+            FROM labour l
+            JOIN labour_project pl ON l.labour_id = pl.labour_id
+            WHERE pl.project_id = %s
+            ORDER BY l.full_name
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (project_id,))
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers by project: {str(e)}"
+

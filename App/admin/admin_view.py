@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 from itsdangerous import URLSafeTimedSerializer
 from App.admin.email_utils import send_reset_email
+from App.admin.email_utils import send_announcement_email
 from collections import defaultdict
 import time
 from itsdangerous import URLSafeTimedSerializer
@@ -1767,12 +1768,201 @@ def reset_password(token):
     return render_template('admin/reset_password.html', token=token)
 
 
+
+@app.route('/admin/announcements', methods=['GET'])
+def manage_announcements():
+    if 'admin_id' not in session:
+        return redirect(url_for('login'))
+    
+    admin_name = session.get('admin_name', 'System')
+    
+    # Fetch all data
+    success, announcements = adminmodel.get_all_announcements()
+    success_pr, projects = adminmodel.get_projects()
+    success_lb, labourers = adminmodel.get_labourers()
+    
+    return render_template(
+        'admin/labour_announcements.html',
+        announcements=announcements if success else [],
+        projects=projects if success_pr else [],
+        labourers=labourers if success_lb else [],
+        datetime=datetime,
+        admin_name=admin_name
+    )
+
+@app.route('/admin/announcements/create', methods=['POST'])
+def create_announcement():
+    if 'admin_id' not in session:
+        return redirect(url_for('login'))
+    
+    data = request.form
+    
+    success, result = adminmodel.create_announcement(
+        project_id=data.get('project_id'),
+        labour_id=data.get('labour_id'),
+        admin_id=session['admin_id'],
+        title=data.get('title'),
+        message=data.get('message'),
+        scheduled_date=data.get('scheduled_date')
+    )
+    
+    if success and data.get('send_email') == 'on':
+        # Fetch labourer and project info for email
+        _, labourers = adminmodel.get_labourers()
+        _, projects = adminmodel.get_projects()
+        labourer = next((l for l in labourers if str(l['labour_id']) == data.get('labour_id')), None)
+        project = next((p for p in projects if str(p['project_id']) == data.get('project_id')), None)
+        
+        if labourer and project:
+            try:
+                send_announcement_email(
+                    to_email=labourer['email'],
+                    title=data.get('title'),
+                    message=data.get('message'),
+                    project_name=project['name'],
+                    scheduled_date=data.get('scheduled_date')
+                )
+            except Exception as e:
+                flash(f"Announcement created but email failed: {e}", 'warning')
+    
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('manage_announcements'))
+
+@app.route('/admin/announcements/update/<int:announcement_id>', methods=['POST'])
+def update_announcement(announcement_id):
+    if 'admin_id' not in session:
+        return redirect(url_for('login'))
+    
+    data = request.form
+    
+    success, result = adminmodel.update_announcement(
+        announcement_id=announcement_id,
+        project_id=data.get('project_id'),
+        labour_id=data.get('labour_id'),
+        title=data.get('title'),
+        message=data.get('message'),
+        scheduled_date=data.get('scheduled_date')
+    )
+    
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('manage_announcements'))
+
+@app.route('/admin/announcements/delete/<int:announcement_id>', methods=['POST'])
+def delete_announcement(announcement_id):
+    if 'admin_id' not in session:
+        return redirect(url_for('login'))
+    
+    success, result = adminmodel.delete_announcement(announcement_id)
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('manage_announcements'))
+
+@app.route('/admin/announcements/resend', methods=['POST'])
+def resend_announcement():
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    try:
+        announcement_id = request.form.get('announcement_id')
+        email = request.form.get('email')
+        
+        if not announcement_id or not email:
+            return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+        
+        success, announcement = adminmodel.get_announcement_by_id(announcement_id)
+        if not success:
+            return jsonify({'success': False, 'message': announcement}), 404
+        
+        # Convert scheduled_date to string if it's a date object
+        scheduled_date = announcement['scheduled_date']
+        if hasattr(scheduled_date, 'strftime'):
+            scheduled_date = scheduled_date.strftime('%Y-%m-%d')
+        else:
+            scheduled_date = str(scheduled_date)
+        
+        send_announcement_email(
+            to_email=email,
+            title=announcement['title'],
+            message=announcement['message'],
+            project_name=announcement.get('project_name', ''),
+            scheduled_date=scheduled_date
+        )
+        
+        return jsonify({'success': True, 'message': 'Announcement resent successfully!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to resend announcement: {str(e)}'}), 500
+    
+# Resend All Functionality Starts
+@app.route('/admin/announcements/resend-all', methods=['POST'])
+def resend_all_announcements():
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    try:
+        success, announcements = adminmodel.get_all_announcements()
+        if not success:
+            return jsonify({'success': False, 'message': announcements}), 400
+        
+        resent_count = 0
+        errors = []
+        
+        for announcement in announcements:
+            try:
+                # Convert scheduled_date to string if it's a date object
+                scheduled_date = announcement['scheduled_date']
+                if hasattr(scheduled_date, 'strftime'):
+                    scheduled_date = scheduled_date.strftime('%Y-%m-%d')
+                else:
+                    scheduled_date = str(scheduled_date)
+                
+                send_announcement_email(
+                    to_email=announcement['labour_email'],
+                    title=announcement['title'],
+                    message=announcement['message'],
+                    project_name=announcement.get('project_name', ''),
+                    scheduled_date=scheduled_date
+                )
+                resent_count += 1
+            except Exception as e:
+                errors.append(f"Failed to resend announcement ID {announcement['id']}: {str(e)}")
+        
+        if errors:
+            return jsonify({
+                'success': True,
+                'resent_count': resent_count,
+                'message': f'Resent {resent_count} announcements, but encountered {len(errors)} errors',
+                'errors': errors
+            })
+        
+        return jsonify({
+            'success': True,
+            'resent_count': resent_count,
+            'message': f'Successfully resent all {resent_count} announcements!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to resend all announcements: {str(e)}'}), 500
+
+
+@app.route('/admin/announcements/get-labourers/<int:project_id>', methods=['GET'])
+def get_labourers_by_project(project_id):
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    success, labourers = adminmodel.get_labourers_by_project(project_id)
+    if success:
+        return jsonify({'success': True, 'labourers': labourers})
+    else:
+        return jsonify({'success': False, 'message': labourers}), 400
+
+
 @app.route('/admin/admin_logout')
 def admin_logout():
-    """Log out the site engineer and clear the session"""
+        
+    """Log out the admin user by clearing the session and redirecting to the login page."""
     session.clear()
     flash("You have been logged out.", "success")
     return redirect('/login')
+
+
 
 
 # Set the secret key

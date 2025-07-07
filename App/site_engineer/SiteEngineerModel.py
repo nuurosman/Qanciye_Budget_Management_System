@@ -1194,7 +1194,6 @@ class UserModel:
             return []
 
 
-
    
 def get_user_model():
     try:
