@@ -109,7 +109,7 @@
         <td>{{ record.created_at.strftime('%Y-%m-%d') if record.created_at else '' }}</td>
         <td>
             <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-warning edit-wage" 
+                <button class="btn btn-sm  edit-wage" style="background-color: #213F72;"
                         data-bs-toggle="modal"
                         data-bs-target="#updateWageModal"
                         data-wage-id="{{ record.wage_id }}"
@@ -120,7 +120,7 @@
                         data-total-wage="{{ record.total_wage }}">
                         <i class="bi bi-pencil-square text-white"></i>
                 </button>
-                <button class="btn btn-sm btn-danger delete-wage"
+                <button class="btn btn-sm text-white  delete-wage" style="background-color: #BF1F50;"
                         data-wage-id="{{ record.wage_id }}">
                         <i class="bi bi-trash-fill"></i>
                 </button>

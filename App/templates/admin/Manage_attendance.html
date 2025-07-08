@@ -89,7 +89,7 @@
                                             </td>
                                             <td style="display: flex; gap: 3px;">
                                                 <!-- Edit Button: pass IDs, not names -->
-                                                <button class="btn btn-sm bg-warning" data-bs-toggle="modal" data-bs-target="#updateAttendanceModal"
+                                                <button class="btn btn-sm " data-bs-toggle="modal" style="background-color: #213F72;" data-bs-target="#updateAttendanceModal"
                                                     data-id="{{ record.attendance_id }}"
                                                     data-labour-id="{{ record.labour_id }}"
                                                     data-project-id="{{ record.project_id }}"
@@ -98,7 +98,7 @@
                                                     <i class="bi bi-pencil-square text-white"></i>
                                                 </button>
                                                 <!-- Delete Button -->
-                                                <button type="button" class="btn btn-sm btn-danger delete-button" data-attendance-id="{{ record.attendance_id }}">
+                                                <button type="button" class="btn btn-sm  delete-button" style="background-color: #BF1F50;" data-attendance-id="{{ record.attendance_id }}">
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
                                             </td>

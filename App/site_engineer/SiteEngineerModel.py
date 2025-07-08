@@ -1193,6 +1193,288 @@ class UserModel:
             print(f"Error fetching attendance for site engineer view: {e}")
             return []
 
+    # Labour Announcements section start
+    
+
+    def create_announcement(self, project_id, labour_id, site_engineer_id, title, message, scheduled_date, sent_by='site_engineer'):
+        try:
+            sql = """
+            INSERT INTO labour_announcements 
+            (labour_id, project_id, site_engineer_id, title, message, scheduled_date, sent_by, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+            """
+            self.cursor.execute(sql, (
+                labour_id, 
+                project_id, 
+                site_engineer_id, 
+                title, 
+                message, 
+                scheduled_date, 
+                sent_by
+            ))
+            self.connection.commit()
+            return True, "Announcement created successfully"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error creating announcement: {str(e)}"
+
+    def get_all_announcements(self):
+        try:
+            sql = """
+            SELECT la.id, la.title, la.message, la.scheduled_date, la.sent_by, la.created_at,
+                    p.name as project_name, p.project_id,
+                    l.full_name as labour_name, l.labour_id, l.email as labour_email,
+                    se.full_name as site_engineer_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN site_engineer se ON la.site_engineer_id = se.site_engineer_id
+            ORDER BY la.created_at DESC
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            announcements = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, announcements
+        except Exception as e:
+            return False, f"Error fetching announcements: {str(e)}"
+
+    def get_announcement_by_id(self, announcement_id):
+        try:
+            sql = """
+            SELECT la.*, p.name as project_name, l.full_name as labour_name, l.email as labour_email,
+                se.full_name as site_engineer_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN site_engineer se ON la.site_engineer_id = se.site_engineer_id
+            WHERE la.id = %s
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (announcement_id,))
+            announcement = dict_cursor.fetchone()
+            dict_cursor.close()
+            if announcement:
+                return True, announcement
+            else:
+                return False, "Announcement not found"
+        except Exception as e:
+            return False, f"Error fetching announcement: {str(e)}"
+
+    def update_announcement(self, announcement_id, project_id, labour_id, title, message, scheduled_date):
+        try:
+            sql = """
+            UPDATE labour_announcements 
+            SET project_id = %s, 
+                labour_id = %s, 
+                title = %s, 
+                message = %s, 
+                scheduled_date = %s
+            WHERE id = %s
+            """
+            self.cursor.execute(sql, (
+                project_id, 
+                labour_id, 
+                title, 
+                message, 
+                scheduled_date, 
+                announcement_id
+            ))
+            self.connection.commit()
+            return True, "Announcement updated successfully"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error updating announcement: {str(e)}"
+
+    def delete_announcement(self, announcement_id):
+        try:
+            sql = "DELETE FROM labour_announcements WHERE id = %s"
+            self.cursor.execute(sql, (announcement_id,))
+            self.connection.commit()
+            if self.cursor.rowcount > 0:
+                return True, "Announcement deleted successfully"
+            else:
+                return False, "Announcement not found"
+        except Exception as e:
+            self.connection.rollback()
+            return False, f"Error deleting announcement: {str(e)}"
+
+    def get_labourers(self):
+        try:
+            sql = "SELECT labour_id, full_name, email FROM labour ORDER BY full_name"
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers: {str(e)}"
+
+    def get_projects(self):
+        try:
+            sql = "SELECT project_id, name FROM projects ORDER BY name"
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql)
+            projects = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, projects
+        except Exception as e:
+            return False, f"Error fetching projects: {str(e)}"
+
+    def get_labourers_by_project(self, project_id):
+        try:
+            sql = """
+            SELECT l.labour_id, l.full_name, l.email 
+            FROM labour l
+            JOIN labour_project pl ON l.labour_id = pl.labour_id
+            WHERE pl.project_id = %s
+            ORDER BY l.full_name
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (project_id,))
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers by project: {str(e)}"
+    
+
+    def get_announcements_by_site_engineer(self, site_engineer_id):
+        try:
+            sql = """
+            SELECT la.id, la.title, la.message, la.scheduled_date, la.sent_by, la.created_at,
+                p.name AS project_name, p.project_id,
+                l.full_name AS labour_name, l.labour_id, l.email AS labour_email,
+                se.full_name AS site_engineer_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN site_engineer se ON la.site_engineer_id = se.site_engineer_id
+            WHERE p.site_engineer_id = %s
+            ORDER BY la.created_at DESC
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (site_engineer_id,))
+            announcements = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, announcements
+        except Exception as e:
+            return False, f"Error fetching announcements: {str(e)}"
+    
+
+
+    def get_announcements_by_site_engineer(self, site_engineer_id):
+        try:
+            sql = """
+            SELECT la.id, la.title, la.message, la.scheduled_date, la.sent_by, la.created_at,
+                p.name AS project_name, p.project_id,
+                l.full_name AS labour_name, l.labour_id, l.email AS labour_email,
+                se.full_name AS site_engineer_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN site_engineer se ON la.site_engineer_id = se.site_engineer_id
+            WHERE p.site_engineer_id = %s OR la.site_engineer_id = %s
+            ORDER BY la.created_at DESC
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (site_engineer_id, site_engineer_id))
+            announcements = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, announcements
+        except Exception as e:
+            return False, f"Error fetching announcements: {str(e)}"
+
+    # def get_my_projects(self, site_engineer_id):
+    #     try:
+    #         sql = """
+    #         SELECT project_id, name 
+    #         FROM projects 
+    #         WHERE site_engineer_id = %s
+    #         ORDER BY name
+    #         """
+    #         dict_cursor = self.connection.cursor(dictionary=True)
+    #         dict_cursor.execute(sql, (site_engineer_id,))
+    #         projects = dict_cursor.fetchall()
+    #         dict_cursor.close()
+    #         return True, projects
+    #     except Exception as e:
+    #         return False, f"Error fetching projects: {str(e)}"
+
+    def get_labourers_by_project(self, project_id):
+        try:
+            sql = """
+            SELECT l.labour_id, l.full_name, l.email 
+            FROM labour l
+            JOIN labour_project pl ON l.labour_id = pl.labour_id
+            WHERE pl.project_id = %s
+            ORDER BY l.full_name
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (project_id,))
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers by project: {str(e)}"
+    
+
+    def get_announcements_by_site_engineer(self, site_engineer_id):
+        try:
+            sql = """
+            SELECT la.id, la.title, la.message, la.scheduled_date, la.sent_by, la.created_at,
+                p.name AS project_name, p.project_id,
+                l.full_name AS labour_name, l.labour_id, l.email AS labour_email,
+                se.full_name AS site_engineer_name
+            FROM labour_announcements la
+            LEFT JOIN projects p ON la.project_id = p.project_id
+            LEFT JOIN labour l ON la.labour_id = l.labour_id
+            LEFT JOIN site_engineer se ON la.site_engineer_id = se.site_engineer_id
+            WHERE p.site_engineer_id = %s OR la.site_engineer_id = %s
+            ORDER BY la.created_at DESC
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (site_engineer_id, site_engineer_id))
+            announcements = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, announcements
+        except Exception as e:
+            return False, f"Error fetching announcements: {str(e)}"
+
+    def get_my_project(self, site_engineer_id):
+        try:
+            sql = """
+            SELECT project_id, name 
+            FROM projects 
+            WHERE site_engineer_id = %s
+            ORDER BY name
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (site_engineer_id,))
+            projects = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, projects
+        except Exception as e:
+            return False, f"Error fetching projects: {str(e)}"
+
+    def get_site_engineer_assigned_labours(self, site_engineer_id):
+        try:
+            sql = """
+            SELECT l.labour_id, l.full_name, l.email, pl.project_id
+            FROM labour l
+            JOIN labour_project pl ON l.labour_id = pl.labour_id
+            JOIN projects p ON pl.project_id = p.project_id
+            WHERE p.site_engineer_id = %s
+            ORDER BY l.full_name
+            """
+            dict_cursor = self.connection.cursor(dictionary=True)
+            dict_cursor.execute(sql, (site_engineer_id,))
+            labourers = dict_cursor.fetchall()
+            dict_cursor.close()
+            return True, labourers
+        except Exception as e:
+            return False, f"Error fetching labourers by project: {str(e)}"
+        # laste comiit ==================================================
 
    
 def get_user_model():

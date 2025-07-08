@@ -88,7 +88,7 @@
                                         <td>{{ transaction.admin_name or 'System' }}</td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <button class="btn btn-sm btn-warning edit-transaction" 
+                                                <button class="btn btn-sm  edit-transaction" style="background-color: #213F72;"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#updateTransactionModal"
                                                     data-transaction-id="{{ transaction.transaction_id }}"
@@ -99,7 +99,7 @@
                                                     data-remarks="{{ transaction.remarks }}">
                                                     <i class="bi bi-pencil-square text-white"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-danger delete-transaction"
+                                                <button class="btn btn-sm text-white delete-transaction" style="background-color: #BF1F50;"
                                                         data-transaction-id="{{ transaction.transaction_id }}">
                                                         <i class="bi bi-trash-fill"></i>
                                                 </button>

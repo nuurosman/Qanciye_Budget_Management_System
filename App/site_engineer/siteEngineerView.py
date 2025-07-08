@@ -1450,3 +1450,227 @@ app.secret_key = 'your_secret_key_here'
 #         print(f"Error loading financial report: {e}")
 #         flash("An error occurred while loading the report.", "danger")
 #         return redirect('/site_engineer/dashboard')
+
+
+
+@app.route('/site_engineer/announcements', methods=['GET'])
+def siteEngineer_manage_announcements():
+    if 'site_engineer_id' not in session:
+        return redirect(url_for('login'))
+
+    site_engineer_id = session.get('site_engineer_id')
+    site_engineer_name = session.get('site_engineer_name', 'Site Engineer')
+
+    # Get model
+    success, model = get_user_model()
+    if not success:
+        flash("Failed to load announcements.", "danger")
+        return redirect('/site_engineer/dashboard')
+
+    # Fetch data for the site engineer's own announcements
+    success_ann, announcements = model.get_announcements_by_site_engineer(site_engineer_id)
+    success_pr, projects = model.get_my_project(site_engineer_id)
+    labourers = model.get_site_engineer_assigned_labours(site_engineer_id)  # <-- fix here
+
+    return render_template(
+        'site_engineer/site_engineer_labour_announcements.html',
+        announcements=announcements if success_ann else [],
+        projects=projects if success_pr else [],
+        labourers=labourers,
+        datetime=datetime,
+        site_engineer_name=site_engineer_name
+    )
+
+
+@app.route('/site-engineer/announcements/create', methods=['POST'])
+def site_engineer_create_announcement():
+    if 'site_engineer_id' not in session:
+        return redirect(url_for('login'))
+    
+    data = request.form
+
+    # Fix: get model instance
+    success, model = get_user_model()
+    if not success:
+        flash("Database connection failed.", "danger")
+        return redirect(url_for('siteEngineer_manage_announcements'))
+
+    success, result = model.create_announcement(
+        project_id=data.get('project_id'),
+        labour_id=data.get('labour_id'),
+        site_engineer_id=session['site_engineer_id'],
+        title=data.get('title'),
+        message=data.get('message'),
+        scheduled_date=data.get('scheduled_date')
+    )
+    
+    if success and data.get('send_email') == 'on':
+        _, labourers = model.get_labourers()
+        _, projects = model.get_projects()
+        labourer = next((l for l in labourers if str(l['labour_id']) == data.get('labour_id')), None)
+        project = next((p for p in projects if str(p['project_id']) == data.get('project_id')), None)
+        
+        if labourer and project:
+            try:
+                send_announcement_email(
+                    to_email=labourer['email'],
+                    title=data.get('title'),
+                    message=data.get('message'),
+                    project_name=project['name'],
+                    scheduled_date=data.get('scheduled_date')
+                )
+            except Exception as e:
+                flash(f"Announcement created but email failed: {e}", 'warning')
+    
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('siteEngineer_manage_announcements'))
+
+@app.route('/site-engineer/announcements/update/<int:announcement_id>', methods=['POST'])
+def site_engineer_update_announcement(announcement_id):
+    if 'site_engineer_id' not in session:
+        return redirect(url_for('login'))
+    
+    data = request.form
+
+    # Fix: get model instance
+    success, model = get_user_model()
+    if not success:
+        flash("Database connection failed.", "danger")
+        return redirect(url_for('siteEngineer_manage_announcements'))
+
+    success, result = model.update_announcement(
+        announcement_id=announcement_id,
+        project_id=data.get('project_id'),
+        labour_id=data.get('labour_id'),
+        title=data.get('title'),
+        message=data.get('message'),
+        scheduled_date=data.get('scheduled_date')
+    )
+    
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('siteEngineer_manage_announcements'))
+
+@app.route('/site-engineer/announcements/delete/<int:announcement_id>', methods=['POST'])
+def site_engineer_delete_announcement(announcement_id):
+    if 'site_engineer_id' not in session:
+        return redirect(url_for('login'))
+
+    # Fix: get model instance
+    success, model = get_user_model()
+    if not success:
+        flash("Database connection failed.", "danger")
+        return redirect(url_for('siteEngineer_manage_announcements'))
+    
+    success, result = model.delete_announcement(announcement_id)
+    flash(result, 'success' if success else 'danger')
+    return redirect(url_for('siteEngineer_manage_announcements'))
+
+@app.route('/site_engineer/announcements/resend', methods=['POST'])
+def site_engineer_resend_announcement():
+    if 'site_engineer_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    try:
+        announcement_id = request.form.get('announcement_id')
+        email = request.form.get('email')
+        
+        if not announcement_id or not email:
+            return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+        
+        # Fix: get model instance
+        success, model = get_user_model()
+        if not success:
+            return jsonify({'success': False, 'message': 'Database connection failed.'}), 500
+
+        success, announcement = model.get_announcement_by_id(announcement_id)
+        if not success:
+            return jsonify({'success': False, 'message': announcement}), 404
+        
+        scheduled_date = announcement['scheduled_date']
+        if hasattr(scheduled_date, 'strftime'):
+            scheduled_date = scheduled_date.strftime('%Y-%m-%d')
+        else:
+            scheduled_date = str(scheduled_date)
+        
+        send_announcement_email(
+            to_email=email,
+            title=announcement['title'],
+            message=announcement['message'],
+            project_name=announcement.get('project_name', ''),
+            scheduled_date=scheduled_date
+        )
+        
+        return jsonify({'success': True, 'message': 'Announcement resent successfully!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to resend announcement: {str(e)}'}), 500
+
+@app.route('/site_engineer/announcements/resend-all', methods=['POST'])
+def site_engineer_resend_all_announcements():
+    if 'site_engineer_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    try:
+        # Fix: get model instance
+        success, model = get_user_model()
+        if not success:
+            return jsonify({'success': False, 'message': 'Database connection failed.'}), 500
+
+        success, announcements = model.get_all_announcements()
+        if not success:
+            return jsonify({'success': False, 'message': announcements}), 400
+        
+        resent_count = 0
+        errors = []
+        
+        for announcement in announcements:
+            try:
+                scheduled_date = announcement['scheduled_date']
+                if hasattr(scheduled_date, 'strftime'):
+                    scheduled_date = scheduled_date.strftime('%Y-%m-%d')
+                else:
+                    scheduled_date = str(scheduled_date)
+                
+                send_announcement_email(
+                    to_email=announcement['labour_email'],
+                    title=announcement['title'],
+                    message=announcement['message'],
+                    project_name=announcement.get('project_name', ''),
+                    scheduled_date=scheduled_date
+                )
+                resent_count += 1
+            except Exception as e:
+                errors.append(f"Failed to resend announcement ID {announcement['id']}: {str(e)}")
+        
+        if errors:
+            return jsonify({
+                'success': True,
+                'resent_count': resent_count,
+                'message': f'Resent {resent_count} announcements, but encountered {len(errors)} errors',
+                'errors': errors
+            })
+        
+        return jsonify({
+            'success': True,
+            'resent_count': resent_count,
+            'message': f'Successfully resent all {resent_count} announcements!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to resend all announcements: {str(e)}'}), 500
+
+@app.route('/site_engineer/announcements/get-labourers/<int:project_id>', methods=['GET'])
+def site_engineer_get_labourers_by_project(project_id):
+    if 'site_engineer_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    # Fix: get model instance
+    success, model = get_user_model()
+    if not success:
+        return jsonify({'success': False, 'message': 'Database connection failed.'}), 500
+
+    success, labourers = model.get_labourers_by_project(project_id)
+    if success:
+        return jsonify({'success': True, 'labourers': labourers})
+    else:
+        return jsonify({'success': False, 'message': labourers}), 400
+
+    # last one =================

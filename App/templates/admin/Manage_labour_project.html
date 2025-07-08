@@ -83,14 +83,14 @@
                         <td>{{ assignment[3] }}</td>
                         <td style="display: flex; gap: 3px;">
                             <!-- Edit Button -->
-                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateAssignmentModal"
+                            <button class="btn btn-sm text-white" style="background-color: #213F72;" data-bs-toggle="modal" data-bs-target="#updateAssignmentModal"
                                 data-id="{{ assignment[0] }}" data-labour-id="{{ assignment[4] }}" 
                                 data-project-id="{{ assignment[5] }}" style="display:inline;">
                                 <i class="bi bi-pencil-square text-white"></i>
                             </button>
 
                             <!-- Delete Button -->
-                            <button type="button" class="btn btn-sm btn-danger delete-button" data-assignment-id="{{ assignment[0] }}">
+                            <button type="button" class="btn btn-sm text-white delete-button" style="background-color: #BF1F50;" data-assignment-id="{{ assignment[0] }}">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                         </td>

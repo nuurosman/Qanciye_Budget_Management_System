@@ -107,7 +107,7 @@
         <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else '' }}</td>
         <td style="display: flex; gap: 3px;">
             <!-- Edit Button -->
-            <button class="btn btn-sm btn-warning" 
+            <button class="btn btn-sm "  style="background-color: #213F72;"
                 data-bs-toggle="modal"
                 data-bs-target="#updateMaterialModal" 
                 data-id="{{ material.material_id }}"
@@ -123,7 +123,7 @@
 
             <!-- Delete Button -->
             <button 
-                class="btn btn-sm btn-danger delete-button"
+                class="btn btn-sm  delete-button text-white" style="background-color: #BF1F50;"
                 data-material-id="{{ material.material_id }}"
                 data-delete-url="/delete_materials/">
                 <i class="bi bi-trash-fill"></i>

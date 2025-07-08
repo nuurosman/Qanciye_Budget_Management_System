@@ -270,7 +270,11 @@ def update_admin():
 
     # Call the update function
     success, message = adminmodel.update_admin(user_id, full_name, email, password)
-
+    if request.is_json:
+        if success:
+            return jsonify({"success": True, "message": "Admin updated successfully!"})
+        else:
+            return jsonify({"success": False, "message": message}), 400
     if success:
         print('Admin updated successfully')
         return redirect(url_for('adminManage'))
@@ -288,17 +292,23 @@ def delete_admin(admin_id):
 
     # Check if the site engineer is referenced
     can_delete, message = adminmodel.check_referen(admin_id, related_tables)
-
     if not can_delete:
+        user_message = "Cannot delete admin: This admin is assigned to a project. Please unassign before deleting."
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": user_message}), 400
         print(f"Cannot delete admin View: {message}")
-        return f"Cannot delete admin View: {message}", 400
+        return user_message, 400
 
     # Proceed with deletion if no references exist
     success, message = adminmodel.delete_admin(admin_id)
     if success:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": True, "message": "Admin deleted successfully!"})
         print(message)
         return redirect(url_for('adminManage'))  # Redirect back to the manage page
     else:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": message}), 400
         print(f"Failed to delete admin: {message}")
         return f"Error: {message}", 400  # Return error message
 
@@ -340,7 +350,11 @@ def update_labour():
 
     # Call the update function
     success, message = adminmodel.update_labour(user_id, full_name, email, password)
-
+    if request.is_json:
+        if success:
+            return jsonify({"success": True, "message": "Labour updated successfully!"})
+        else:
+            return jsonify({"success": False, "message": message}), 400
     # Redirect to labour management page with success or error message
     if success:
         flash("Labour updated successfully!", "success")
@@ -377,17 +391,23 @@ def delete_labour(labour_id):
 
     # Check if the site engineer is referenced
     can_delete, message = adminmodel.check_references(labour_id, related_tables)
-
     if not can_delete:
+        user_message = "Cannot delete labour: This labour is assigned to a project or has attendance/wages records. Please unassign or remove related records before deleting."
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": user_message}), 400
         print(f"Cannot delete labour View: {message}")
-        return f"Cannot delete labour View: {message}", 400
+        return user_message, 400
 
     # Proceed with deletion if no references exist
     success, message = adminmodel.delete_labour(labour_id)
     if success:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": True, "message": "Labour deleted successfully!"})
         print(message)
         return redirect(url_for('labour_Manage'))  # Redirect back to the manage page
     else:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": message}), 400
         print(f"Failed to delete engineer: {message}")
         return f"Error: {message}", 400  # Return error message
 
@@ -418,7 +438,11 @@ def update_siteENgineer():
 
     # Call the update function
     success, message = adminmodel.update_siteENgineer(user_id, full_name, email, password)
-
+    if request.is_json:
+        if success:
+            return jsonify({"success": True, "message": "Site Engineer updated successfully!"})
+        else:
+            return jsonify({"success": False, "message": message}), 400
     if success:
         print('Admin updated successfully View')
         return redirect(url_for('site_engineerManage'))
@@ -432,22 +456,27 @@ def update_siteENgineer():
 def delete_siteEngineer(site_engineer_id):
     """Deletes a site engineer record from the database."""
     # List of tables where the site_engineer_id might be referenced
-    related_tables = ['materials', 'projects',  # Add more tables as needed
-]
+    related_tables = ['materials', 'projects']
 
     # Check if the site engineer is referenced
     can_delete, message = adminmodel.check_referenc(site_engineer_id, related_tables)
-
     if not can_delete:
+        user_message = "Cannot delete site engineer: This site engineer is assigned to a project or has related records. Please unassign before deleting."
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": user_message}), 400
         print(f"Cannot delete site engineer View: {message}")
-        return f"Cannot delete site engineer View: {message}", 400
+        return user_message, 400
 
     # Proceed with deletion if no references exist
     success, message = adminmodel.delete_siteEngineer(site_engineer_id)
     if success:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": True, "message": "Site Engineer deleted successfully!"})
         print(message)
         return redirect(url_for('site_engineerManage'))  # Redirect back to the manage page
     else:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": message}), 400
         print(f"Failed to delete engineer: {message}")
         return f"Error: {message}", 400  # Return error message
 
@@ -649,15 +678,19 @@ def project_manage():
             "name": user.get('full_name')
         }
 
+    # Pass any flashed messages to the template for SweetAlert
+    from flask import get_flashed_messages
+    messages = get_flashed_messages(with_categories=True)
+
     if success:
-        # print("Projects fetched successfully:", projects)  # Debugging
         return render_template(
             'admin/projectManage.html',
             projects=projects,
-            current_admin=current_admin
+            current_admin=current_admin,
+            messages=messages  # Pass messages for SweetAlert
         )
     else:
-        print("Error fetching project data:", projects)  # Debugging
+        print("Error fetching project data:", projects)
         return "Error fetching project data", 500  
 
 
@@ -695,11 +728,18 @@ def update_project():
 @app.route('/delete_project/<int:project_id>', methods=['POST'])
 def delete_project(project_id):
     success, message = adminmodel.delete_project(project_id)
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        # Always return JSON for AJAX
+        return jsonify({"success": success, "message": message}), 200 if success else 400
     if success:
+        from flask import flash
+        flash("Project deleted successfully!", "success")
         return redirect(url_for('project_manage'))
     else:
-        print(f"Failed to delete project: {message}")
-        return f"Error: {message}", 400
+        # Flash the error for SweetAlert in template
+        from flask import flash
+        flash(message, "error")
+        return redirect(url_for('project_manage'))
 
 @app.route('/get_project_budget/<int:project_id>')
 def get_project_budget(project_id):
@@ -1808,41 +1848,12 @@ def create_announcement():
     
     if success and data.get('send_email') == 'on':
         # Fetch labourer and project info for email
-        _, labourers = adminmodel.get_labourers()
-        _, projects = adminmodel.get_projects()
-        labourer = next((l for l in labourers if str(l['labour_id']) == data.get('labour_id')), None)
-        project = next((p for p in projects if str(p['project_id']) == data.get('project_id')), None)
-        
-        if labourer and project:
-            try:
-                send_announcement_email(
-                    to_email=labourer['email'],
-                    title=data.get('title'),
-                    message=data.get('message'),
-                    project_name=project['name'],
-                    scheduled_date=data.get('scheduled_date')
-                )
-            except Exception as e:
-                flash(f"Announcement created but email failed: {e}", 'warning')
-    
-    flash(result, 'success' if success else 'danger')
-    return redirect(url_for('manage_announcements'))
-
-@app.route('/admin/announcements/update/<int:announcement_id>', methods=['POST'])
-def update_announcement(announcement_id):
-    if 'admin_id' not in session:
-        return redirect(url_for('login'))
-    
-    data = request.form
-    
-    success, result = adminmodel.update_announcement(
-        announcement_id=announcement_id,
-        project_id=data.get('project_id'),
+        _,
         labour_id=data.get('labour_id'),
         title=data.get('title'),
         message=data.get('message'),
         scheduled_date=data.get('scheduled_date')
-    )
+
     
     flash(result, 'success' if success else 'danger')
     return redirect(url_for('manage_announcements'))

@@ -82,7 +82,7 @@
                                         <td>{{ user[4] }}</td> <!-- Created At -->
                                         <td>
                                             <!-- Edit Button with data attributes -->
-                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" style="background-color: #213F72;"
                                                 data-bs-target="#updateModal" data-id="{{ user[0] }}"
                                                 data-name="{{ user[1] }}" data-pass="{{ user[3] }}"
                                                 data-email="{{ user[2] }}">
@@ -91,7 +91,7 @@
                                             <form class="delete-form"
                                                 action="{{ url_for('delete_admin', admin_id=user[0]) }}" method="POST"
                                                 style="display:inline;">
-                                                <button type="button" class="btn btn-sm btn-danger delete-button"
+                                                <button type="button" style="background-color: #BF1F50;" class="btn btn-sm  delete-button"
                                                     data-admin-id="{{ user[0] }}">
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>

@@ -84,7 +84,7 @@
                                                 data-message="{{ announcement.message }}">
                                                 <i class="bi bi-eye-fill"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-warning edit-announcement"
+                                            <button class="btn btn-sm text-white edit-announcement" style="background-color: #213F72;"
                                                 data-id="{{ announcement.id }}"
                                                 data-project-id="{{ announcement.project_id }}"
                                                 data-labour-id="{{ announcement.labour_id }}"
@@ -100,7 +100,7 @@
                                             </button>
                                             <form method="POST"
                                                 action="{{ url_for('site_engineer_delete_announcement', announcement_id=announcement.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                <button type="submit" class="btn btn-sm text-white " style="background-color: #BF1F50;"
                                                     onclick="return confirm('Are you sure you want to delete this announcement?')">
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
@@ -441,10 +441,10 @@
         });
 
         // Initialize DataTable
-        $('#jobTable').DataTable({
-            responsive: true,
-            order: [[0, 'desc']]
-        });
+        // $('#jobTable').DataTable({
+        //     responsive: true,
+        //     order: [[0, 'desc']]
+        // });
 
         // Set minimum date for scheduled date
         const today = new Date().toISOString().split('T')[0];
@@ -460,7 +460,7 @@
             const message = $(this).data('message');
             const scheduledDate = $(this).data('scheduled-date');
 
-            $('#editAnnouncementForm').attr('action', `/site-engineer/announcements/update/${id}`);
+            $('#editAnnouncementForm').attr('action', `/site_engineer/announcements/update/${id}`);
             $('#edit_project_id').val(projectId);
             $('#edit_labour_id').val(labourId);
             $('#edit_title').val(title);
@@ -543,18 +543,30 @@
         // Function to load labourers
         function loadLabourers(projectId, labourSelectId, selectedLabourId = null) {
             const labourSelect = document.getElementById(labourSelectId);
-            
+
             // Show loading state
             const originalHtml = labourSelect.innerHTML;
             labourSelect.innerHTML = '<option value="">Loading labourers...</option>';
             labourSelect.disabled = true;
-            
-            const url = projectId 
-                ? `/site-engineer/announcements/get-labourers/${projectId}`
-                : '/site-engineer/announcements/get-labourers';
-            
+
+            // Use correct Flask route with underscore
+            const url = projectId
+                ? `/site_engineer/announcements/get-labourers/${projectId}`
+                : '';
+
+            if (!url) {
+                labourSelect.innerHTML = '<option value="" disabled selected>Select project first</option>';
+                labourSelect.disabled = false;
+                return;
+            }
+
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         labourSelect.innerHTML = '<option value="" disabled selected>Select labourer</option>';

@@ -382,11 +382,19 @@ class AdminModel:
     def delete_project(self, project_id):
         try:
             # Check for references in related tables
-            related_tables = ['wages']  # Add more tables as needed
+            related_tables = ['wages', 'labour_project', 'materials']  # Check for labour and site engineer assignments
             can_delete, message = self.check_project_references(project_id, related_tables)
 
             if not can_delete:
-                return False, message
+                # Custom user-friendly messages
+                if "labour_project" in message:
+                    return False, "Cannot delete project: This project has assigned labours. Please unassign all labours before deleting."
+                elif "wages" in message:
+                    return False, "Cannot delete project: This project has wage/payment records. Please remove related wages before deleting."
+                elif "materials" in message:
+                    return False, "Cannot delete project: This project has assigned materials. Please remove related materials before deleting."
+                else:
+                    return False, message
 
             sql = "DELETE FROM projects WHERE project_id = %s"
             self.cursor.execute(sql, (project_id,))

@@ -105,7 +105,7 @@
                                             <div class="d-flex gap-2">
                                                 <!-- Only allow edit/delete if registered by this engineer or admin -->
                                                 {% if record.site_engineer_id == session['site_engineer_id'] or record.admin_name %}
-                                                <button class="btn btn-sm btn-warning edit-attendance" 
+                                                <button class="btn btn-sm  edit-attendance" style="background-color: #213F72;"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#updateAttendanceModal"
                                                         data-attendance-id="{{ record.attendance_id }}"
@@ -115,7 +115,7 @@
                                                         data-status="{{ record.status }}">
                                                         <i class="bi bi-pencil-square text-white"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-danger delete-attendance"
+                                                <button class="btn btn-sm text-white delete-attendance" style="background-color: #BF1F50;"
                                                         data-attendance-id="{{ record.attendance_id }}">
                                                         <i class="bi bi-trash-fill"></i>
                                                 </button>
@@ -123,7 +123,7 @@
                                                 <button class="btn btn-sm btn-secondary" disabled>
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-secondary" disabled>
+                                                <button class="btn btn-sm " style="background-color: #BF1F50;" disabled>
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
                                                 {% endif %}

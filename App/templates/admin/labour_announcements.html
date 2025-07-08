@@ -90,7 +90,7 @@
                                                 data-message="{{ announcement.message }}">
                                                 <i class="bi bi-eye-fill"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-warning edit-announcement"
+                                            <button class="btn btn-sm text-white edit-announcement" style="background-color: #213F72;"
                                                 data-id="{{ announcement.id }}"
                                                 data-project-id="{{ announcement.project_id }}"
                                                 data-labour-id="{{ announcement.labour_id }}"
@@ -106,7 +106,7 @@
                                             </button>
                                             <form method="POST"
                                                 action="{{ url_for('delete_announcement', announcement_id=announcement.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                <button type="submit" class="btn btn-sm text-white " style="background-color: #BF1F50;"
                                                     onclick="return confirm('Are you sure you want to delete this announcement?')">
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
@@ -450,10 +450,10 @@
         });
 
         // Initialize DataTable (keep jQuery if you're using it elsewhere)
-        $('#jobTable').DataTable({
-            responsive: true,
-            order: [[0, 'desc']]
-        });
+        // $('#jobTable').DataTable({
+        //     responsive: true,
+        //     order: [[0, 'desc']]
+        // });
 
         // Set minimum date for scheduled date
         const today = new Date().toISOString().split('T')[0];
