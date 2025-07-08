@@ -28,7 +28,7 @@ def send_announcement_email(to_email, title, message, project_name, scheduled_da
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
             {message}
         </div>
-        <p>Please contact your supervisor if you have any questions.</p>
+        <p>Please contact this number: +252 612907406 / +252 615301196</p>
         <hr>
         <p>This is an automated message. Please do not reply directly to this email.</p>
         """
