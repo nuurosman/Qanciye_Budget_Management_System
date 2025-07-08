@@ -660,8 +660,8 @@ def register_project():
     success, message = adminmodel.register_project(
         name, description, start_date, end_date, total_budget, material_budget, wages_budget, other_expenses_budget, status, site_engineer_id, admin_id
     )
-    # If validation fails, return 400 with the message
-    return jsonify({"success": success, "message": message}), (201 if success else 400)
+    # Fix syntax error here
+    return jsonify({"success": success, "message": message}), 201 if success else 400
 
 # Fetch and display projects
 @app.route('/admin/projectManage')
@@ -821,9 +821,8 @@ def register_material():
 
         # Pass None for site_engineer_id
         success, message = adminmodel.register_material(item_name, quantity, unit_price, amount, None, project_id, admin_id)
-        # FIX: Correct conditional expression syntax
-        return jsonify({"success": success, "message": message}), (201 if success else 400)
-
+        # Fix syntax error here
+        return jsonify({"success": success, "message": message}), 201 if success else 400
     except Exception as e:
         return jsonify({"success": False, "message": f"Error: {e}"}), 500
 
@@ -1380,6 +1379,7 @@ def register_budget_transaction():
             project_id, transaction_type, reference_id, amount, remarks, admin_id
         )
         
+        # Fix syntax error here
         return jsonify({"success": success, "message": message}), 201 if success else 400
     except Exception as e:
         print(f"Error during budget transaction registration: {e}")
@@ -1416,6 +1416,7 @@ def update_budget_transaction():
             transaction_id, project_id, transaction_type, reference_id, amount, remarks
         )
         
+        # Fix syntax error here
         return jsonify({"success": success, "message": message}), 200 if success else 400
     except Exception as e:
         print(f"Error during budget transaction update: {e}")
@@ -1428,6 +1429,7 @@ def delete_budget_transaction(transaction_id):
             return jsonify({"success": False, "message": "Transaction not found"}), 404
             
         success, message = adminmodel.delete_budget_transaction(transaction_id)
+        # Fix syntax error here
         return jsonify({"success": success, "message": message}), 200 if success else 400
     except Exception as e:
         return jsonify({"success": False, "message": f"Error: {e}"}), 500
@@ -1832,11 +1834,9 @@ def manage_announcements():
 
 @app.route('/admin/announcements/create', methods=['POST'])
 def create_announcement():
-    if 'admin_id' not in session:
-        return redirect(url_for('login'))
     
     data = request.form
-    
+
     success, result = adminmodel.create_announcement(
         project_id=data.get('project_id'),
         labour_id=data.get('labour_id'),
@@ -1845,17 +1845,45 @@ def create_announcement():
         message=data.get('message'),
         scheduled_date=data.get('scheduled_date')
     )
-    
+
+    # Send email if requested and announcement creation succeeded
     if success and data.get('send_email') == 'on':
         # Fetch labourer and project info for email
-        _,
-        labour_id=data.get('labour_id'),
-        title=data.get('title'),
-        message=data.get('message'),
-        scheduled_date=data.get('scheduled_date')
-
-    
-    flash(result, 'success' if success else 'danger')
+        labour_id = data.get('labour_id')
+        project_id = data.get('project_id')
+        # Get labourer email and project name
+        labour_success, labour = adminmodel.get_labourers_by_project(project_id)
+        project_success, projects = adminmodel.get_projects()
+        # Find the correct labourer and project
+        labour_email = None
+        project_name = ""
+        if labour_success and labour:
+            for l in labour:
+                if str(l['labour_id']) == str(labour_id):
+                    labour_email = l['email']
+                    break
+        if project_success and projects:
+            for p in projects:
+                if str(p['project_id']) == str(project_id):
+                    project_name = p['name']
+                    break
+        # Send the email if we have the email address
+        if labour_email:
+            try:
+                send_announcement_email(
+                    to_email=labour_email,
+                    title=data.get('title'),
+                    message=data.get('message'),
+                    project_name=project_name,
+                    scheduled_date=data.get('scheduled_date')
+                )
+                flash("Announcement created and email sent successfully!", "success")
+            except Exception as e:
+                flash(f"Announcement created, but failed to send email: {str(e)}", "danger")
+        else:
+            flash("Announcement created, but could not find labourer's email.", "warning")
+    else:
+        flash(result, 'success' if success else 'danger')
     return redirect(url_for('manage_announcements'))
 
 @app.route('/admin/announcements/delete/<int:announcement_id>', methods=['POST'])

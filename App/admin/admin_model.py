@@ -107,7 +107,7 @@ class AdminModel:
     def get_all_siteEngineers(self):
         try:
             dict_cursor = self.connection.cursor(dictionary=True)
-            sql = "SELECT site_engineer_id, full_name FROM site_engineer"
+            sql = "SELECT site_engineer_id, full_name, email, created_at FROM site_engineer"
             dict_cursor.execute(sql)
             site_engineers = dict_cursor.fetchall()
             dict_cursor.close()
