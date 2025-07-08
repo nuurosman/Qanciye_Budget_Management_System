@@ -243,7 +243,7 @@ def get_labour_model():
         db_config = LabourDbConnetion()
         user_db = Labour_UserDatabase(
             host=db_config.DB_HOSTNAME,
-            port=3300,
+            port=3306,
             user=db_config.DB_USERNAME,
             password=db_config.DB_PASSWORD,
             database=db_config.DB_NAME,

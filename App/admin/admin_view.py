@@ -22,7 +22,7 @@ try:
     db_config = admin_model_module.AdminDbConnetion()
     user_db = admin_model_module.UserDatabase(
         host=db_config.DB_HOSTNAME,
-        port=3300,
+        port=3306,
         user=db_config.DB_USERNAME,
         password=db_config.DB_PASSWORD,
         database=db_config.DB_NAME,
@@ -1738,7 +1738,7 @@ try:
     db_config = admin_model_module.AdminDbConnetion()
     user_db = admin_model_module.UserDatabase(
         host=db_config.DB_HOSTNAME,
-        port=3300,
+        port=3306,
         user=db_config.DB_USERNAME,
         password=db_config.DB_PASSWORD,
         database=db_config.DB_NAME,
